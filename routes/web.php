@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/transfers', [WarehouseTransferController::class, 'index'])->name('transfers.index');
     Route::get('/transfers/create', [WarehouseTransferController::class, 'create'])->name('transfers.create');
     Route::post('/transfers', [WarehouseTransferController::class, 'store'])->name('transfers.store');
-    Route::get('/transfers/{warehouseTransfer}', [WarehouseTransferController::class, 'show'])->name('transfers.show');
+    Route::get('/transfers/{transfer}', [WarehouseTransferController::class, 'show'])->name('transfers.show');
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
