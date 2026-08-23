@@ -67,9 +67,6 @@
                     <a href="{{ route('stock-movements.index') }}" class="sidebar-link {{ request()->is('stock-movements*') ? 'active' : '' }}">
                         <i class="fa-solid fa-right-left"></i> {{ __('Stock Movements') }}
                     </a>
-                    <a href="{{ route('transfers.index') }}" class="sidebar-link {{ request()->is('transfers*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-shuffle"></i> {{ __('Transfers') }}
-                    </a>
                 </div>
 
                 <div class="sidebar-group">

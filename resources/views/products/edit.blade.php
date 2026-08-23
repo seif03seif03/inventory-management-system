@@ -39,6 +39,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Barcode <span class="hint">(optional)</span></label>
+                    <input type="text" name="barcode" class="form-control" value="{{ old('barcode', $product->barcode) }}" placeholder="e.g. 8901234567890">
+                    @error('barcode')
+                        <span class="cell-muted">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label>Category *</label>
                     <select name="category_id" class="form-control" required>
                         <option value="">Select category</option>

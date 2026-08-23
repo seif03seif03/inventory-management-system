@@ -26,7 +26,7 @@
             <div class="filters-bar">
                 <form action="{{ route('products.index') }}" method="GET" class="search-field" style="margin: 0;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search products by name or SKU...') }}">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search by name, SKU, or barcode...') }}">
                 </form>
             </div>
         </div>
@@ -54,7 +54,12 @@
                                     <span class="cell-primary">{{ $product->name }}</span>
                                 </div>
                             </td>
-                            <td class="cell-mono">{{ $product->sku }}</td>
+                            <td class="cell-mono">
+                                {{ $product->sku }}
+                                @if ($product->barcode)
+                                    <br><span class="cell-muted" style="font-size:11px;">{{ $product->barcode }}</span>
+                                @endif
+                            </td>
                             <td class="cell-muted">{{ $product->category->name }}</td>
                             <td class="cell-primary">${{ number_format($product->price, 2) }}</td>
                             @php $stock = $productStocks[$product->id] ?? 0; @endphp

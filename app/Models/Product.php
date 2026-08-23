@@ -10,6 +10,7 @@ class Product extends Model
         'category_id',
         'name',
         'sku',
+        'barcode',
         'description',
         'price',
         'minimum_stock',
@@ -31,6 +32,12 @@ class Product extends Model
     {
         static::saving(function ($product) {
             $product->sku = strtoupper($product->sku);
+
+            // An empty string is not the same as "no barcode" for a unique
+            // column — two blank strings would collide, two NULLs won't.
+            if ($product->barcode === '') {
+                $product->barcode = null;
+            }
         });
     }
 }

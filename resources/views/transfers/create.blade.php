@@ -113,6 +113,12 @@
                         </button>
                     </div>
 
+                    <div class="form-group" style="max-width:320px;margin-bottom:14px;">
+                        <label for="barcodeScanInput"><i class="fa-solid fa-barcode"></i> {{ __('Scan Barcode') }}</label>
+                        <input type="text" id="barcodeScanInput" class="form-control"
+                               placeholder="{{ __('Scan or type a barcode, then press Enter') }}" autocomplete="off">
+                    </div>
+
                     <div class="table-wrap" style="border-radius:var(--radius-md);overflow:visible;">
                         <table class="data-table" id="itemsTable">
                             <thead>
@@ -131,7 +137,7 @@
                                                 <select name="products[]" class="form-control" required>
                                                     <option value="">{{ __('Select product...') }}</option>
                                                     @foreach ($products as $p)
-                                                        <option value="{{ $p->id }}" {{ $pid == $p->id ? 'selected' : '' }}>
+                                                        <option value="{{ $p->id }}" data-barcode="{{ $p->barcode }}" {{ $pid == $p->id ? 'selected' : '' }}>
                                                             {{ $p->name }} ({{ $p->sku }})
                                                         </option>
                                                     @endforeach
@@ -156,7 +162,7 @@
                                             <select name="products[]" class="form-control" required>
                                                 <option value="">{{ __('Select product...') }}</option>
                                                 @foreach ($products as $p)
-                                                    <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->sku }})</option>
+                                                    <option value="{{ $p->id }}" data-barcode="{{ $p->barcode }}">{{ $p->name }} ({{ $p->sku }})</option>
                                                 @endforeach
                                             </select>
                                         </td>
@@ -218,5 +224,50 @@
 
     // Bind remove buttons on existing rows
     itemsBody.querySelectorAll('.item-row').forEach(bindRemoveButton);
+
+    // -------------------------------------------------------------------
+    // Barcode scanning: a barcode scanner behaves like a keyboard, typing
+    // the code then Enter. We match it against each option's data-barcode
+    // and drop it into the first empty product row (adding one if needed).
+    // -------------------------------------------------------------------
+    const barcodeInput = document.getElementById('barcodeScanInput');
+
+    function findOptionByBarcode(select, code) {
+        for (const opt of select.options) {
+            if (opt.dataset.barcode && opt.dataset.barcode === code) return opt;
+        }
+        return null;
+    }
+
+    if (barcodeInput) {
+        barcodeInput.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+
+            const code = barcodeInput.value.trim();
+            barcodeInput.value = '';
+            if (!code) return;
+
+            const referenceSelect = itemsBody.querySelector('select[name="products[]"]');
+            const match = referenceSelect ? findOptionByBarcode(referenceSelect, code) : null;
+
+            if (!match) {
+                barcodeInput.style.borderColor = 'var(--color-danger, #ef4444)';
+                setTimeout(() => { barcodeInput.style.borderColor = ''; }, 800);
+                return;
+            }
+
+            let targetSelect = Array.from(itemsBody.querySelectorAll('select[name="products[]"]')).find(s => !s.value);
+            if (!targetSelect) {
+                const newRow = rowTemplate.cloneNode(true);
+                itemsBody.appendChild(newRow);
+                bindRemoveButton(newRow);
+                targetSelect = newRow.querySelector('select[name="products[]"]');
+            }
+
+            targetSelect.value = match.value;
+            targetSelect.closest('tr').querySelector('input[name="quantities[]"]')?.focus();
+        });
+    }
 </script>
 @endpush

@@ -16,8 +16,11 @@ class ProductController extends Controller
         $query = Product::with('category')->latest();
 
         if ($search = $request->input('search')) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
+            });
         }
 
         $products = $query->get();
@@ -61,6 +64,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'sku' => ['required', 'string', 'max:100', Rule::unique('products', 'sku')],
+            'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'minimum_stock' => 'required|integer|min:0',
@@ -74,7 +78,25 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        return view('products.show', compact('product'));
+        // Total stock across all warehouses, using the same IN - OUT rule
+        // as everywhere else (no separate calculation is introduced here).
+        $totalIn = StockMovement::where('product_id', $product->id)
+            ->where('type', StockMovement::TYPE_IN)
+            ->sum('quantity');
+
+        $totalOut = StockMovement::where('product_id', $product->id)
+            ->where('type', StockMovement::TYPE_OUT)
+            ->sum('quantity');
+
+        $currentStock = max(0, (int) $totalIn - (int) $totalOut);
+
+        $movements = StockMovement::where('product_id', $product->id)
+            ->with('warehouse')
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return view('products.show', compact('product', 'currentStock', 'movements'));
     }
 
     public function edit(Product $product)
@@ -89,6 +111,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'sku' => ['required', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product->id)],
+            'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')->ignore($product->id)],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'minimum_stock' => 'required|integer|min:0',
