@@ -20,6 +20,7 @@
 /storage/pail
 /vendor
 /.claude
+/storage/framework
 Homestead.json
 Homestead.yaml
 Thumbs.db
