@@ -39,11 +39,6 @@ class WarehouseTransfer extends Model
 
     public function items()
     {
-        return $this->hasMany(WarehouseTransferItem::class);
-    }
-
-    public function isCompleted(): bool
-    {
-        return $this->status === self::STATUS_COMPLETED;
+        return $this->hasMany(WarehouseTransferItem::class, 'warehouse_transfer_id');
     }
 }

@@ -16,13 +16,13 @@ class WarehouseTransferItem extends Model
         'quantity' => 'integer',
     ];
 
-    public function warehouseTransfer()
+    public function transfer()
     {
-        return $this->belongsTo(WarehouseTransfer::class);
+        return $this->belongsTo(WarehouseTransfer::class, 'warehouse_transfer_id');
     }
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

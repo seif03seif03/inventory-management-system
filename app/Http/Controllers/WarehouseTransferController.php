@@ -9,183 +9,167 @@ use App\Models\WarehouseTransfer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class WarehouseTransferController extends Controller
 {
     /**
-     * ROUTE: GET /transfers → transfers.index
+     * ROUTE: GET /transfers  ->  transfers.index
+     *
+     * Lists all warehouse transfers, newest first, with optional filters.
      */
     public function index(Request $request)
     {
         $query = WarehouseTransfer::query()
-            ->with(['fromWarehouse', 'toWarehouse'])
+            ->with(['fromWarehouse', 'toWarehouse', 'creator'])
             ->withCount('items')
             ->withSum('items', 'quantity')
             ->latest();
 
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('reference_number', 'like', "%{$search}%")
-                    ->orWhereHas('items.product', function ($productQuery) use ($search) {
-                        $productQuery->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
-                    });
-            });
+        // Filter by source warehouse
+        if ($fromId = $request->input('from_warehouse_id')) {
+            $query->where('from_warehouse_id', $fromId);
         }
 
+        // Filter by destination warehouse
+        if ($toId = $request->input('to_warehouse_id')) {
+            $query->where('to_warehouse_id', $toId);
+        }
+
+        // Filter by reference number or notes
+        if ($search = $request->input('search')) {
+            $query->where('reference_number', 'like', "%{$search}%");
+        }
+
+        // Filter by date
         if ($date = $request->input('date')) {
             $query->whereDate('transfer_date', $date);
         }
 
-        if ($fromWarehouseId = $request->input('from_warehouse_id')) {
-            $query->where('from_warehouse_id', $fromWarehouseId);
-        }
-
-        if ($toWarehouseId = $request->input('to_warehouse_id')) {
-            $query->where('to_warehouse_id', $toWarehouseId);
-        }
-
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
-
-        $transfers = $query->paginate(20)->withQueryString();
+        $transfers  = $query->paginate(20)->withQueryString();
         $warehouses = Warehouse::orderBy('name')->get();
 
         return view('transfers.index', compact('transfers', 'warehouses'));
     }
 
     /**
-     * ROUTE: GET /transfers/create → transfers.create
+     * ROUTE: GET /transfers/create  ->  transfers.create
      *
-     * Available stock is keyed by source warehouse, same pattern as Stock Out.
+     * Shows the transfer form. Only active warehouses and products are offered.
      */
     public function create()
     {
         $warehouses = Warehouse::where('active', true)->orderBy('name')->get();
-        $products = Product::where('active', true)->orderBy('name')->get();
+        $products   = Product::where('active', true)->orderBy('name')->get();
 
-        $stocks = [];
-
-        foreach (StockMovement::currentStockRows()->get() as $row) {
-            $stocks[$row->warehouse_id][$row->product_id] = max(0, (int) $row->current_stock);
-        }
-
-        return view('transfers.create', compact('warehouses', 'products', 'stocks'));
+        return view('transfers.create', compact('warehouses', 'products'));
     }
 
     /**
-     * ROUTE: POST /transfers → transfers.store
+     * ROUTE: POST /transfers  ->  transfers.store
      *
-     * A completed transfer writes:
-     *   source warehouse      → OUT movement
-     *   destination warehouse → IN movement
-     *
-     * Both rows use the existing IN/OUT types so currentStock() does not change.
+     * Validates, checks stock, then executes the transfer inside a single DB transaction.
+     * Two stock movements are written per item: OUT from source, IN to destination.
      */
     public function store(Request $request)
     {
+        // ---------------------------------------------------------------
+        // 1. VALIDATE
+        // ---------------------------------------------------------------
         $validated = $request->validate([
-            'from_warehouse_id' => ['required', Rule::exists('warehouses', 'id')->where('active', true)],
-            'to_warehouse_id' => [
-                'required',
-                'different:from_warehouse_id',
-                Rule::exists('warehouses', 'id')->where('active', true),
-            ],
-            'reference_number' => 'required|string|max:100',
-            'transfer_date' => 'required|date',
-            'notes' => 'nullable|string',
-            'products' => 'required|array|min:1',
-            'products.*' => ['required', Rule::exists('products', 'id')->where('active', true)],
-            'quantities' => 'required|array|min:1',
-            'quantities.*' => 'required|integer|min:1',
+            'from_warehouse_id' => 'required|exists:warehouses,id',
+            'to_warehouse_id'   => 'required|exists:warehouses,id|different:from_warehouse_id',
+            'reference_number'  => 'required|string|max:100',
+            'transfer_date'     => 'required|date',
+            'notes'             => 'nullable|string',
+            'products'          => 'required|array|min:1',
+            'products.*'        => 'required|exists:products,id',
+            'quantities'        => 'required|array|min:1',
+            'quantities.*'      => 'required|integer|min:1',
         ], [
-            'from_warehouse_id.required' => 'Choose a source warehouse.',
-            'to_warehouse_id.required' => 'Choose a destination warehouse.',
-            'to_warehouse_id.different' => 'Source and destination warehouses must be different.',
-            'products.required' => 'Add at least one product to the transfer.',
-            'products.*.required' => 'Choose a product on every item row.',
-            'products.*.exists' => 'One of the selected products does not exist.',
-            'quantities.*.required' => 'Enter a quantity on every item row.',
-            'quantities.*.integer' => 'Quantity must be a whole number.',
-            'quantities.*.min' => 'Quantity must be at least 1.',
+            'to_warehouse_id.different'  => 'The source and destination warehouses must be different.',
+            'products.required'          => 'Add at least one product to transfer.',
+            'products.*.exists'          => 'One of the selected products does not exist.',
+            'quantities.*.min'           => 'Quantity must be at least 1.',
         ]);
 
         if (count($validated['products']) !== count($validated['quantities'])) {
-            return back()
-                ->withInput()
-                ->with('error', 'Some item rows were incomplete. Please check every row.');
+            return back()->withInput()->with('error', 'Some item rows were incomplete.');
         }
 
+        // ---------------------------------------------------------------
+        // 2. STOCK CHECK (before entering the transaction)
+        //    For each product, verify the source warehouse has enough stock.
+        //    We group by product_id to handle duplicate rows.
+        // ---------------------------------------------------------------
         $fromWarehouseId = (int) $validated['from_warehouse_id'];
-        $toWarehouseId = (int) $validated['to_warehouse_id'];
-
-        $requestedByProduct = [];
+        $requestedQty    = []; // [product_id => total_qty_requested]
 
         foreach ($validated['products'] as $index => $productId) {
             $productId = (int) $productId;
-            $requestedByProduct[$productId] = ($requestedByProduct[$productId] ?? 0)
-                + (int) $validated['quantities'][$index];
+            $qty       = (int) $validated['quantities'][$index];
+            $requestedQty[$productId] = ($requestedQty[$productId] ?? 0) + $qty;
         }
 
-        $productNames = Product::whereIn('id', array_keys($requestedByProduct))
-            ->pluck('name', 'id');
-
-        $stockErrors = [];
-
-        foreach ($requestedByProduct as $productId => $requested) {
+        foreach ($requestedQty as $productId => $totalQty) {
             $available = StockMovement::currentStock($productId, $fromWarehouseId);
-
-            if ($requested > $available) {
-                $name = $productNames[$productId] ?? "Product #{$productId}";
-
-                $stockErrors[] = "Insufficient stock for \"{$name}\" in the source warehouse. "
-                    . "Available: {$available}. Requested: {$requested}.";
+            if ($totalQty > $available) {
+                $product = Product::find($productId);
+                return back()
+                    ->withInput()
+                    ->with('error', "Insufficient stock for \"{$product->name}\". Available: {$available}, Requested: {$totalQty}.");
             }
         }
 
-        if (! empty($stockErrors)) {
-            return back()
-                ->withInput()
-                ->with('stockErrors', $stockErrors);
-        }
-
-        $transfer = DB::transaction(function () use ($validated, $fromWarehouseId, $toWarehouseId) {
+        // ---------------------------------------------------------------
+        // 3. WRITE — inside a DB transaction (all or nothing)
+        //    For every item row we create:
+        //      (a) A WarehouseTransferItem child record.
+        //      (b) An OUT movement from the source warehouse.
+        //      (c) An IN  movement to the destination warehouse.
+        //
+        //    The StockMovement ledger is the single source of truth, so
+        //    the transfer does NOT touch any separate "stock" counter —
+        //    it just writes IN/OUT rows, exactly like StockIn/StockOut do.
+        // ---------------------------------------------------------------
+        $transfer = DB::transaction(function () use ($validated, $fromWarehouseId) {
             $transfer = WarehouseTransfer::create([
                 'from_warehouse_id' => $fromWarehouseId,
-                'to_warehouse_id' => $toWarehouseId,
-                'reference_number' => $validated['reference_number'],
-                'transfer_date' => $validated['transfer_date'],
-                'notes' => $validated['notes'] ?? null,
-                'status' => WarehouseTransfer::STATUS_COMPLETED,
-                'created_by' => Auth::id(),
+                'to_warehouse_id'   => (int) $validated['to_warehouse_id'],
+                'reference_number'  => $validated['reference_number'],
+                'transfer_date'     => $validated['transfer_date'],
+                'notes'             => $validated['notes'] ?? null,
+                'status'            => WarehouseTransfer::STATUS_COMPLETED,
+                'created_by'        => Auth::id(),
             ]);
 
             foreach ($validated['products'] as $index => $productId) {
-                $quantity = (int) $validated['quantities'][$index];
+                $productId = (int) $productId;
+                $quantity  = (int) $validated['quantities'][$index];
 
+                // (a) Item row
                 $transfer->items()->create([
                     'product_id' => $productId,
-                    'quantity' => $quantity,
+                    'quantity'   => $quantity,
                 ]);
 
+                // (b) OUT movement — reduces stock in source warehouse
                 StockMovement::create([
-                    'product_id' => $productId,
-                    'warehouse_id' => $fromWarehouseId,
-                    'type' => StockMovement::TYPE_OUT,
-                    'quantity' => $quantity,
-                    'reference_type' => StockMovement::REFERENCE_TRANSFER,
-                    'reference_id' => $transfer->id,
+                    'product_id'     => $productId,
+                    'warehouse_id'   => $fromWarehouseId,
+                    'type'           => StockMovement::TYPE_OUT,
+                    'quantity'       => $quantity,
+                    'reference_type' => 'warehouse_transfer',
+                    'reference_id'   => $transfer->id,
                 ]);
 
+                // (c) IN movement — increases stock in destination warehouse
                 StockMovement::create([
-                    'product_id' => $productId,
-                    'warehouse_id' => $toWarehouseId,
-                    'type' => StockMovement::TYPE_IN,
-                    'quantity' => $quantity,
-                    'reference_type' => StockMovement::REFERENCE_TRANSFER,
-                    'reference_id' => $transfer->id,
+                    'product_id'     => $productId,
+                    'warehouse_id'   => (int) $validated['to_warehouse_id'],
+                    'type'           => StockMovement::TYPE_IN,
+                    'quantity'       => $quantity,
+                    'reference_type' => 'warehouse_transfer',
+                    'reference_id'   => $transfer->id,
                 ]);
             }
 
@@ -194,16 +178,18 @@ class WarehouseTransferController extends Controller
 
         return redirect()
             ->route('transfers.show', $transfer)
-            ->with('success', 'Warehouse transfer saved and inventory updated.');
+            ->with('success', 'Transfer completed and inventory updated.');
     }
 
     /**
-     * ROUTE: GET /transfers/{warehouseTransfer} → transfers.show
+     * ROUTE: GET /transfers/{transfer}  ->  transfers.show
+     *
+     * Shows a single transfer with all its items, warehouses, and creator.
      */
-    public function show(WarehouseTransfer $warehouseTransfer)
+    public function show(WarehouseTransfer $transfer)
     {
-        $warehouseTransfer->load(['fromWarehouse', 'toWarehouse', 'creator', 'items.product']);
+        $transfer->load(['fromWarehouse', 'toWarehouse', 'creator', 'items.product']);
 
-        return view('transfers.show', compact('warehouseTransfer'));
+        return view('transfers.show', compact('transfer'));
     }
 }
