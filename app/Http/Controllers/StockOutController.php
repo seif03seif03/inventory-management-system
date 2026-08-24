@@ -56,6 +56,12 @@ class StockOutController extends Controller
             $query->where('warehouse_id', $warehouseId);
         }
 
+        if ($productId = $request->input('product_id')) {
+            $query->whereHas('items', function ($itemQuery) use ($productId) {
+                $itemQuery->where('product_id', $productId);
+            });
+        }
+
         if ($status = $request->input('status')) {
             $query->where('status', $status);
         }
@@ -65,8 +71,9 @@ class StockOutController extends Controller
         // Populate the filter dropdowns from the database.
         $distributors = Distributor::orderBy('name')->get();
         $warehouses = Warehouse::orderBy('name')->get();
+        $products = Product::orderBy('name')->get();
 
-        return view('stock-out.index', compact('stockOuts', 'distributors', 'warehouses'));
+        return view('stock-out.index', compact('stockOuts', 'distributors', 'warehouses', 'products'));
     }
 
     /**

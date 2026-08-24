@@ -23,12 +23,31 @@
         @endif
 
         <div class="card-body" style="padding-bottom: 0;">
-            <div class="filters-bar">
-                <form action="{{ route('products.index') }}" method="GET" class="search-field" style="margin: 0;">
+            <form action="{{ route('products.index') }}" method="GET" class="filters-bar">
+                <div class="search-field">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search by name, SKU, or barcode...') }}">
-                </form>
-            </div>
+                </div>
+
+                <select name="category_id" class="select-field" onchange="this.form.submit()">
+                    <option value="">{{ __('All Categories') }}</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <select name="active" class="select-field" onchange="this.form.submit()">
+                    <option value="">{{ __('All Statuses') }}</option>
+                    <option value="1" {{ request('active') === '1' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="0" {{ request('active') === '0' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                </select>
+
+                @if (request()->hasAny(['search', 'category_id', 'active']))
+                    <a href="{{ route('products.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
+                @endif
+            </form>
         </div>
 
         <div class="table-wrap">

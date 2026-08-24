@@ -57,17 +57,29 @@ class StockInController extends Controller
             $query->where('supplier_id', $supplierId);
         }
 
+        if ($warehouseId = $request->input('warehouse_id')) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+
+        if ($productId = $request->input('product_id')) {
+            $query->whereHas('items', function ($itemQuery) use ($productId) {
+                $itemQuery->where('product_id', $productId);
+            });
+        }
+
         if ($status = $request->input('status')) {
             $query->where('status', $status);
         }
 
         $stockIns = $query->get();
 
-        // The supplier dropdown in the filter bar is built from the database,
-        // never hardcoded.
-        $suppliers = Supplier::orderBy('name')->get();
+        // The supplier/warehouse/product dropdowns in the filter bar are
+        // built from the database, never hardcoded.
+        $suppliers  = Supplier::orderBy('name')->get();
+        $warehouses = Warehouse::orderBy('name')->get();
+        $products   = Product::orderBy('name')->get();
 
-        return view('stock-in.index', compact('stockIns', 'suppliers'));
+        return view('stock-in.index', compact('stockIns', 'suppliers', 'warehouses', 'products'));
     }
 
     /**

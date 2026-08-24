@@ -23,6 +23,14 @@ class ProductController extends Controller
             });
         }
 
+        if ($categoryId = $request->input('category_id')) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($request->filled('active')) {
+            $query->where('active', $request->input('active') == '1');
+        }
+
         $products = $query->get();
 
         // Build a stock map so Blade can show the current stock for each product
@@ -49,7 +57,9 @@ class ProductController extends Controller
             $productStocks[$product->id] = max(0, (int)$in - (int)$out);
         }
 
-        return view('products.index', compact('products', 'productStocks'));
+        $categories = Category::orderBy('name')->get();
+
+        return view('products.index', compact('products', 'productStocks', 'categories'));
     }
 
     public function create()

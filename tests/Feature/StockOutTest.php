@@ -105,6 +105,22 @@ class StockOutTest extends TestCase
     {
         [$product, $warehouse, $distributor] = $this->createScenario(10);
         $otherWarehouse = Warehouse::create(['name' => 'Other Warehouse', 'active' => true]);
+        $otherProduct = Product::create([
+            'category_id' => $product->category_id,
+            'name' => 'Samsung Galaxy S24',
+            'sku' => 'SGS24',
+            'price' => 900,
+            'minimum_stock' => 2,
+            'active' => true,
+        ]);
+        StockMovement::create([
+            'product_id' => $otherProduct->id,
+            'warehouse_id' => $warehouse->id,
+            'type' => StockMovement::TYPE_IN,
+            'quantity' => 10,
+            'reference_type' => 'test_setup',
+            'reference_id' => 2,
+        ]);
 
         $this->post(route('stock-out.store'), [
             'distributor_id' => $distributor->id,
@@ -115,12 +131,31 @@ class StockOutTest extends TestCase
             'quantities' => [1],
         ]);
 
+        $this->post(route('stock-out.store'), [
+            'distributor_id' => $distributor->id,
+            'warehouse_id' => $warehouse->id,
+            'reference_number' => 'ISS-OTHER-PRODUCT',
+            'issue_date' => now()->toDateString(),
+            'products' => [$otherProduct->id],
+            'quantities' => [1],
+        ]);
+
         $this->get(route('stock-out.index', ['warehouse_id' => $warehouse->id]))
             ->assertOk()
             ->assertSee('ISS-MAIN');
 
         $this->get(route('stock-out.index', ['warehouse_id' => $otherWarehouse->id]))
             ->assertOk()
+            ->assertDontSee('ISS-MAIN');
+
+        $this->get(route('stock-out.index', ['product_id' => $product->id]))
+            ->assertOk()
+            ->assertSee('ISS-MAIN')
+            ->assertDontSee('ISS-OTHER-PRODUCT');
+
+        $this->get(route('stock-out.index', ['product_id' => $otherProduct->id]))
+            ->assertOk()
+            ->assertSee('ISS-OTHER-PRODUCT')
             ->assertDontSee('ISS-MAIN');
     }
 

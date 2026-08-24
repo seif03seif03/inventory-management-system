@@ -53,6 +53,16 @@
                     @endforeach
                 </select>
 
+                <select name="product_id" class="select-field" onchange="this.form.submit()">
+                    <option value="">{{ __('All Products') }}</option>
+                    @foreach ($products as $product)
+                        <option value="{{ $product->id }}"
+                            {{ request('product_id') == $product->id ? 'selected' : '' }}>
+                            {{ $product->name }}
+                        </option>
+                    @endforeach
+                </select>
+
                 <select name="status" class="select-field" onchange="this.form.submit()">
                     <option value="">{{ __('All Statuses') }}</option>
                     <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>{{ __('Completed') }}</option>
@@ -60,7 +70,7 @@
                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
                 </select>
 
-                @if (request()->hasAny(['search', 'date', 'distributor_id', 'warehouse_id', 'status']))
+                @if (request()->hasAny(['search', 'date', 'distributor_id', 'warehouse_id', 'product_id', 'status']))
                     <a href="{{ route('stock-out.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
                 @endif
             </form>

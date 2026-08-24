@@ -301,7 +301,16 @@ class StockInTest extends TestCase
     public function test_index_filters_narrow_the_list(): void
     {
         [$product, $supplier, $warehouse] = $this->setUpInventory();
-        $otherSupplier = Supplier::create(['name' => 'Nile Distribution', 'active' => true]);
+        $otherSupplier  = Supplier::create(['name' => 'Nile Distribution', 'active' => true]);
+        $otherWarehouse = Warehouse::create(['name' => 'Alexandria Warehouse', 'active' => true]);
+        $otherProduct   = Product::create([
+            'category_id'   => $product->category_id,
+            'name'          => 'Samsung Galaxy S24',
+            'sku'           => 'PRD-2002',
+            'price'         => 699.00,
+            'minimum_stock' => 10,
+            'active'        => true,
+        ]);
 
         $this->post(route('stock-in.store'), [
             'supplier_id'      => $supplier->id,
@@ -315,10 +324,10 @@ class StockInTest extends TestCase
 
         $this->post(route('stock-in.store'), [
             'supplier_id'      => $otherSupplier->id,
-            'warehouse_id'     => $warehouse->id,
+            'warehouse_id'     => $otherWarehouse->id,
             'reference_number' => 'RCPT-BBB',
             'receipt_date'     => '2026-08-01',
-            'products'         => [$product->id],
+            'products'         => [$otherProduct->id],
             'quantities'       => [20],
             'unit_costs'       => [100],
         ]);
@@ -339,8 +348,16 @@ class StockInTest extends TestCase
         $this->get(route('stock-in.index', ['status' => 'pending']))
             ->assertDontSee('RCPT-AAA')->assertDontSee('RCPT-BBB');
 
+        // Filter by warehouse
+        $this->get(route('stock-in.index', ['warehouse_id' => $otherWarehouse->id]))
+            ->assertSee('RCPT-BBB')->assertDontSee('RCPT-AAA');
+
+        // Filter by product
+        $this->get(route('stock-in.index', ['product_id' => $otherProduct->id]))
+            ->assertSee('RCPT-BBB')->assertDontSee('RCPT-AAA');
+
         // Search by product SKU finds both receipts
         $this->get(route('stock-in.index', ['search' => 'PRD-1001']))
-            ->assertSee('RCPT-AAA')->assertSee('RCPT-BBB');
+            ->assertSee('RCPT-AAA')->assertDontSee('RCPT-BBB');
     }
 }
