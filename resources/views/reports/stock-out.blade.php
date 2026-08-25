@@ -11,6 +11,8 @@
                 <h2>Stock Out Report</h2>
                 <p>{{ $stockOutItems->total() }} completed issue {{ Str::plural('line', $stockOutItems->total()) }} found</p>
             </div>
+
+            @include('reports.partials.export-buttons', ['route' => 'reports.stock-out.export'])
         </div>
 
         <div class="card-body" style="padding-bottom: 0;">

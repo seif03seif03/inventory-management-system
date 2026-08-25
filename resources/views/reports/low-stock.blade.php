@@ -11,6 +11,8 @@
                 <h2>Low Stock Report</h2>
                 <p>{{ $lowStockRows->total() }} low-stock {{ Str::plural('row', $lowStockRows->total()) }} found</p>
             </div>
+
+            @include('reports.partials.export-buttons', ['route' => 'reports.low-stock.export'])
         </div>
 
         <div class="card-body" style="padding-bottom: 0;">

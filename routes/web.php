@@ -128,6 +128,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/stock-in', [ReportController::class, 'stockIn'])->name('reports.stock-in');
     Route::get('/reports/stock-out', [ReportController::class, 'stockOut'])->name('reports.stock-out');
 
+    // Report exports. {format} is constrained to pdf|csv so the controller
+    // never has to defend against an arbitrary value, and an unknown format
+    // 404s rather than silently falling back to one of them.
+    Route::get('/reports/stock/export/{format}', [ReportController::class, 'exportStock'])
+        ->name('reports.stock.export')->whereIn('format', ['pdf', 'csv']);
+    Route::get('/reports/movements/export/{format}', [ReportController::class, 'exportMovements'])
+        ->name('reports.movements.export')->whereIn('format', ['pdf', 'csv']);
+    Route::get('/reports/low-stock/export/{format}', [ReportController::class, 'exportLowStock'])
+        ->name('reports.low-stock.export')->whereIn('format', ['pdf', 'csv']);
+    Route::get('/reports/stock-in/export/{format}', [ReportController::class, 'exportStockIn'])
+        ->name('reports.stock-in.export')->whereIn('format', ['pdf', 'csv']);
+    Route::get('/reports/stock-out/export/{format}', [ReportController::class, 'exportStockOut'])
+        ->name('reports.stock-out.export')->whereIn('format', ['pdf', 'csv']);
+
     /*
     |--------------------------------------------------------------------------
     | Admin-Only Routes

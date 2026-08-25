@@ -11,6 +11,8 @@
                 <h2>Stock Movement Report</h2>
                 <p>{{ $movements->total() }} {{ Str::plural('movement', $movements->total()) }} found</p>
             </div>
+
+            @include('reports.partials.export-buttons', ['route' => 'reports.movements.export'])
         </div>
 
         <div class="card-body" style="padding-bottom: 0;">

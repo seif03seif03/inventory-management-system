@@ -11,6 +11,8 @@
                 <h2>Stock In Report</h2>
                 <p>{{ $stockInItems->total() }} completed receipt {{ Str::plural('line', $stockInItems->total()) }} found</p>
             </div>
+
+            @include('reports.partials.export-buttons', ['route' => 'reports.stock-in.export'])
         </div>
 
         <div class="card-body" style="padding-bottom: 0;">
