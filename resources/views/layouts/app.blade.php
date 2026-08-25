@@ -64,6 +64,9 @@
                     <a href="{{ route('transfers.index') }}" class="sidebar-link {{ request()->is('transfers*') ? 'active' : '' }}">
                         <i class="fa-solid fa-truck-ramp-box"></i> {{ __('Transfers') }}
                     </a>
+                    <a href="{{ route('adjustments.index') }}" class="sidebar-link {{ request()->is('adjustments*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-sliders"></i> {{ __('Adjustments') }}
+                    </a>
                     <a href="{{ route('stock-movements.index') }}" class="sidebar-link {{ request()->is('stock-movements*') ? 'active' : '' }}">
                         <i class="fa-solid fa-right-left"></i> {{ __('Stock Movements') }}
                     </a>

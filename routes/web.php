@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DistributorController;
+use App\Http\Controllers\InventoryAdjustmentController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -120,6 +121,20 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/transfers/{transfer}', [WarehouseTransferController::class, 'show'])->name('transfers.show');
+
+    // Inventory Adjustments
+    Route::get('/adjustments', [InventoryAdjustmentController::class, 'index'])->name('adjustments.index');
+
+    // An adjustment can create or destroy stock with no counterparty document,
+    // which makes it the most sensitive write in the system — restricted to
+    // Admin and Warehouse Manager, enforced here rather than by hiding the
+    // button. Must stay declared before /adjustments/{adjustment} below.
+    Route::middleware('role:Admin,Warehouse Manager')->group(function () {
+        Route::get('/adjustments/create', [InventoryAdjustmentController::class, 'create'])->name('adjustments.create');
+        Route::post('/adjustments', [InventoryAdjustmentController::class, 'store'])->name('adjustments.store');
+    });
+
+    Route::get('/adjustments/{adjustment}', [InventoryAdjustmentController::class, 'show'])->name('adjustments.show');
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

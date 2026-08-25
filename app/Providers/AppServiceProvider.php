@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Models\Distributor;
+use App\Models\InventoryAdjustment;
 use App\Models\Product;
 use App\Models\StockIn;
 use App\Models\StockMovement;
@@ -40,9 +41,10 @@ class AppServiceProvider extends ServiceProvider
         // tables legible and means renaming or moving a model class does not
         // invalidate existing history.
         Relation::morphMap([
-            StockMovement::REFERENCE_STOCK_IN  => StockIn::class,
-            StockMovement::REFERENCE_STOCK_OUT => StockOut::class,
-            StockMovement::REFERENCE_TRANSFER  => WarehouseTransfer::class,
+            StockMovement::REFERENCE_STOCK_IN   => StockIn::class,
+            StockMovement::REFERENCE_STOCK_OUT  => StockOut::class,
+            StockMovement::REFERENCE_TRANSFER   => WarehouseTransfer::class,
+            StockMovement::REFERENCE_ADJUSTMENT => InventoryAdjustment::class,
 
             'product'     => Product::class,
             'category'    => Category::class,

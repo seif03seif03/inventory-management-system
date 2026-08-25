@@ -29,6 +29,7 @@ class StockMovement extends Model
     public const REFERENCE_STOCK_IN = 'stock_in';
     public const REFERENCE_STOCK_OUT = 'stock_out';
     public const REFERENCE_TRANSFER = 'warehouse_transfer';
+    public const REFERENCE_ADJUSTMENT = 'inventory_adjustment';
 
     public function product()
     {
