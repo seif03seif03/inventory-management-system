@@ -95,8 +95,12 @@ class ReportController extends Controller
 
     public function lowStock(Request $request)
     {
+        // product_active: retired products should not raise low-stock alerts.
+        // currentStockRows() no longer filters them out itself, so this states
+        // the intent here — the stock report above deliberately shows them.
         $query = DB::query()
             ->fromSub(StockMovement::currentStockRows(), 'stock_rows')
+            ->where('product_active', true)
             ->where('minimum_stock', '>', 0)
             ->whereColumn('current_stock', '<=', 'minimum_stock');
 

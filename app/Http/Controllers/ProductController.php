@@ -31,21 +31,25 @@ class ProductController extends Controller
             $query->where('active', $request->input('active') == '1');
         }
 
-        $products = $query->get();
+        $products = $query->paginate(20)->withQueryString();
 
         // Build a stock map so Blade can show the current stock for each product
         // without running a separate query per row (which would be an N+1 problem).
         //
-        // We run exactly 2 queries:
-        //   - one SUM query for all IN movements, grouped by product_id
-        //   - one SUM query for all OUT movements, grouped by product_id
+        // We run exactly 2 queries, both scoped to the products on this page:
+        //   - one SUM query for their IN movements, grouped by product_id
+        //   - one SUM query for their OUT movements, grouped by product_id
         // Then we combine them into $productStocks[productId] = currentStock.
-        $ins = StockMovement::where('type', StockMovement::TYPE_IN)
+        $productIds = $products->pluck('id');
+
+        $ins = StockMovement::whereIn('product_id', $productIds)
+            ->where('type', StockMovement::TYPE_IN)
             ->groupBy('product_id')
             ->selectRaw('product_id, SUM(quantity) as total')
             ->pluck('total', 'product_id');
 
-        $outs = StockMovement::where('type', StockMovement::TYPE_OUT)
+        $outs = StockMovement::whereIn('product_id', $productIds)
+            ->where('type', StockMovement::TYPE_OUT)
             ->groupBy('product_id')
             ->selectRaw('product_id, SUM(quantity) as total')
             ->pluck('total', 'product_id');
@@ -135,6 +139,16 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        // The ledger and every stock document hold a RESTRICT foreign key on
+        // product_id, so the database will refuse this delete outright once the
+        // product has been received, issued or transferred. We ask first and
+        // explain, instead of letting that surface as an unhandled constraint
+        // violation. Deactivating is the correct way to retire a product whose
+        // history must stay readable.
+        if ($product->hasStockHistory()) {
+            return back()->with('error', "\"{$product->name}\" appears on stock documents and cannot be deleted. Mark it inactive instead.");
+        }
+
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');

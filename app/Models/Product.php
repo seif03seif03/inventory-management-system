@@ -22,6 +22,43 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    public function stockInItems()
+    {
+        return $this->hasMany(StockInItem::class);
+    }
+
+    public function stockOutItems()
+    {
+        return $this->hasMany(StockOutItem::class);
+    }
+
+    public function transferItems()
+    {
+        return $this->hasMany(WarehouseTransferItem::class);
+    }
+
+    /**
+     * Has this product ever appeared on a stock document?
+     *
+     * All four tables above hold a RESTRICT foreign key on product_id, because
+     * deleting a product would leave the ledger unable to explain current
+     * stock. A receipt line can exist without a movement (a receipt that is
+     * still 'pending'), so every one of them has to be checked — not just the
+     * ledger. exists() stops at the first match instead of counting rows.
+     */
+    public function hasStockHistory(): bool
+    {
+        return $this->stockMovements()->exists()
+            || $this->stockInItems()->exists()
+            || $this->stockOutItems()->exists()
+            || $this->transferItems()->exists();
+    }
+
     protected $casts = [
         'active' => 'boolean',
         'price' => 'decimal:2',

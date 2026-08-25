@@ -17,4 +17,18 @@ class Supplier extends Model
     protected $casts = [
         'active' => 'boolean',
     ];
+
+    public function stockIns()
+    {
+        return $this->hasMany(StockIn::class);
+    }
+
+    /**
+     * stock_ins holds a RESTRICT foreign key on supplier_id, so a supplier
+     * named on any receipt cannot be deleted without orphaning that receipt.
+     */
+    public function hasStockHistory(): bool
+    {
+        return $this->stockIns()->exists();
+    }
 }

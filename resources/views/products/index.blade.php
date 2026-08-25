@@ -9,7 +9,7 @@
         <div class="card-header">
             <div>
                 <h2>{{ __('All Products') }}</h2>
-                <p>{{ $products->count() }} {{ __('products found') }}</p>
+                <p>{{ $products->total() }} {{ __('products found') }}</p>
             </div>
             <a href="{{ route('products.create') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> {{ __('Add Product') }}
@@ -19,6 +19,15 @@
         @if (session('success'))
             <div class="card-body" style="padding-bottom: 0;">
                 <span class="badge badge-green">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="card-body" style="padding-bottom: 0;">
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <div>{{ session('error') }}</div>
+                </div>
             </div>
         @endif
 
@@ -116,6 +125,32 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($products->hasPages())
+            <div class="pagination-bar">
+                <span>
+                    {{ __('Showing') }} {{ $products->firstItem() }}-{{ $products->lastItem() }}
+                    {{ __('of') }} {{ $products->total() }} {{ __('products') }}
+                </span>
+                <div class="pagination-controls">
+                    @if ($products->onFirstPage())
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    @else
+                        <a href="{{ $products->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a>
+                    @endif
+
+                    @foreach ($products->getUrlRange(1, $products->lastPage()) as $page => $url)
+                        <a href="{{ $url }}" class="page-btn {{ $page === $products->currentPage() ? 'active' : '' }}">{{ $page }}</a>
+                    @endforeach
+
+                    @if ($products->hasMorePages())
+                        <a href="{{ $products->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a>
+                    @else
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
 
 @endsection

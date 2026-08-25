@@ -40,19 +40,25 @@ class StockMovement extends Model
         return $this->belongsTo(Warehouse::class);
     }
 
-    public function stockIn()
+    /**
+     * The document this movement came from — a StockIn, StockOut or
+     * WarehouseTransfer, chosen by reference_type.
+     *
+     * This has to be a morphTo, not a belongsTo. reference_id on its own is
+     * ambiguous: Stock In #5 and Stock Out #5 can both exist, so a
+     * belongsTo(StockIn::class, 'reference_id') would cheerfully return Stock In
+     * #5 for a movement that actually came from Stock Out #5 — the type column
+     * is on THIS table, so a belongsTo can't take it into account at all.
+     *
+     * morphTo reads reference_type too, and the map registered in
+     * AppServiceProvider translates 'stock_in' into the right model class so
+     * the stored values stay readable rather than becoming PHP class paths.
+     *
+     * Returns null when reference_type is empty.
+     */
+    public function reference()
     {
-        return $this->belongsTo(StockIn::class, 'reference_id');
-    }
-
-    public function stockOut()
-    {
-        return $this->belongsTo(StockOut::class, 'reference_id');
-    }
-
-    public function warehouseTransfer()
-    {
-        return $this->belongsTo(WarehouseTransfer::class, 'reference_id');
+        return $this->morphTo();
     }
 
     /**
@@ -103,10 +109,20 @@ class StockMovement extends Model
     /**
      * Current stock rows for every Product + Warehouse pair that has movement.
      *
-     * This is the reusable summary query used by the dashboard now, and by the
-     * Phase 4 reports next. It keeps the same rule as currentStock():
+     * This is the reusable summary query behind the dashboard and the reports.
+     * It keeps the same rule as currentStock():
      *
      *     current stock = SUM(IN) - SUM(OUT)
+     *
+     * It deliberately does NOT filter on products.active. Deactivating a
+     * product does not make the units on the shelf disappear, and hiding them
+     * here made real stock silently vanish from every report while
+     * currentStock() (which has no such filter) still counted it — the two
+     * paths disagreed about what stock existed.
+     *
+     * Instead, products.active is exposed as product_active so each caller can
+     * say what it means: the stock report shows everything, while the low-stock
+     * views filter to active products so retired items stop raising alerts.
      */
     public static function currentStockRows()
     {
@@ -114,13 +130,13 @@ class StockMovement extends Model
             ->join('products', 'stock_movements.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
             ->join('warehouses', 'stock_movements.warehouse_id', '=', 'warehouses.id')
-            ->where('products.active', true)
             ->select([
                 'stock_movements.product_id',
                 'stock_movements.warehouse_id',
                 'products.category_id',
                 'products.name as product_name',
                 'products.sku as product_sku',
+                'products.active as product_active',
                 'categories.name as category_name',
                 'products.minimum_stock',
                 'warehouses.name as warehouse_name',
@@ -136,6 +152,7 @@ class StockMovement extends Model
                 'products.category_id',
                 'products.name',
                 'products.sku',
+                'products.active',
                 'categories.name',
                 'products.minimum_stock',
                 'warehouses.name'

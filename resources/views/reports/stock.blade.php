@@ -74,7 +74,12 @@
                             $currentStock = (int) $row->current_stock;
                         @endphp
                         <tr>
-                            <td class="cell-primary">{{ $row->product_name }}</td>
+                            <td class="cell-primary">
+                                {{ $row->product_name }}
+                                @unless ($row->product_active)
+                                    <span class="badge badge-gray">Inactive</span>
+                                @endunless
+                            </td>
                             <td class="cell-mono">{{ $row->product_sku }}</td>
                             <td class="cell-muted">{{ $row->category_name }}</td>
                             <td class="cell-muted">{{ $row->warehouse_name }}</td>

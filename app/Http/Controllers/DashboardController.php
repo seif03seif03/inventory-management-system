@@ -49,10 +49,16 @@ class DashboardController extends Controller
 
         // Low stock is checked per Product + Warehouse. This reuses the same
         // IN-minus-OUT summary query from the StockMovement model.
+        //
+        // product_active filters to products still in use: a retired product
+        // sitting below its threshold is not something to alert on. The summary
+        // query itself no longer hides inactive rows, so callers say what they
+        // mean — see StockMovement::currentStockRows().
         $stockRows = StockMovement::currentStockRows();
 
         $lowStockQuery = DB::query()
             ->fromSub($stockRows, 'stock_rows')
+            ->where('product_active', true)
             ->where('minimum_stock', '>', 0)
             ->whereColumn('current_stock', '<=', 'minimum_stock');
 
