@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class StockIn extends Model
 {
+    use LogsActivity;
+
     /**
      * Laravel guesses the table name by pluralising the class name:
      * StockIn -> stock_ins. That matches our migration, so we don't

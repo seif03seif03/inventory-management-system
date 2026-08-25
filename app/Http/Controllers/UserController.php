@@ -56,26 +56,31 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|max:255|unique:users,email',
-            'role_id'  => 'required|exists:roles,id',
-            'password' => 'required|string|min:8|confirmed',
-        ], [
-            'name.required'     => 'Please enter the user\'s name.',
-            'email.required'    => 'Please enter an email address.',
-            'email.unique'      => 'This email address is already registered to another user.',
-            'role_id.required'  => 'Please select a system role for this user.',
-            'password.required' => 'Please enter a password for this user.',
-            'password.min'      => 'The password must be at least 8 characters long.',
-            'password.confirmed'=> 'The password confirmation does not match.',
-        ]);
+        $validated = $request->validate(
+            array_merge([
+                'name'     => 'required|string|max:255',
+                'email'    => 'required|email|max:255|unique:users,email',
+                'role_id'  => 'required|exists:roles,id',
+                'password' => 'required|string|min:8|confirmed',
+            ], $this->notificationRules($request)),
+            array_merge([
+                'name.required'     => 'Please enter the user\'s name.',
+                'email.required'    => 'Please enter an email address.',
+                'email.unique'      => 'This email address is already registered to another user.',
+                'role_id.required'  => 'Please select a system role for this user.',
+                'password.required' => 'Please enter a password for this user.',
+                'password.min'      => 'The password must be at least 8 characters long.',
+                'password.confirmed'=> 'The password confirmation does not match.',
+            ], $this->notificationMessages())
+        );
 
         User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'role_id'  => $validated['role_id'],
-            'password' => Hash::make($validated['password']),
+            'name'                  => $validated['name'],
+            'email'                 => $validated['email'],
+            'phone'                 => $validated['phone'] ?? null,
+            'role_id'               => $validated['role_id'],
+            'receive_notifications' => $request->boolean('receive_notifications'),
+            'password'              => Hash::make($validated['password']),
         ]);
 
         return redirect()
@@ -102,23 +107,35 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role_id'  => 'required|exists:roles,id',
-            'password' => 'nullable|string|min:8|confirmed',
-        ], [
-            'name.required'     => 'Please enter the user\'s name.',
-            'email.required'    => 'Please enter an email address.',
-            'email.unique'      => 'This email address is already registered to another user.',
-            'role_id.required'  => 'Please select a system role.',
-            'password.min'      => 'The password must be at least 8 characters long.',
-            'password.confirmed'=> 'The password confirmation does not match.',
-        ]);
+        $validated = $request->validate(
+            array_merge([
+                'name'     => 'required|string|max:255',
+                'email'    => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+                'role_id'  => 'required|exists:roles,id',
+                'password' => 'nullable|string|min:8|confirmed',
+            ], $this->notificationRules($request, $user)),
+            array_merge([
+                'name.required'     => 'Please enter the user\'s name.',
+                'email.required'    => 'Please enter an email address.',
+                'email.unique'      => 'This email address is already registered to another user.',
+                'role_id.required'  => 'Please select a system role.',
+                'password.min'      => 'The password must be at least 8 characters long.',
+                'password.confirmed'=> 'The password confirmation does not match.',
+            ], $this->notificationMessages())
+        );
 
         $user->name    = $validated['name'];
         $user->email   = $validated['email'];
         $user->role_id = $validated['role_id'];
+
+        // Only overwrite the stored number when one was submitted. Revoking the
+        // permission must NOT wipe it: the number is kept so the permission can
+        // be restored later without re-entering it.
+        if ($request->filled('phone')) {
+            $user->phone = $validated['phone'];
+        }
+
+        $user->receive_notifications = $request->boolean('receive_notifications');
 
         if (! empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -129,6 +146,39 @@ class UserController extends Controller
         return redirect()
             ->route('users.index')
             ->with('success', 'User account updated successfully.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notification permission rules
+    |--------------------------------------------------------------------------
+    | receive_notifications is only meaningful if there is a number to reach the
+    | user on, so enabling it makes phone required. The rule is built here, on
+    | the server, from the submitted checkbox — never left to the browser.
+    |
+    | On update the user's ALREADY STORED number satisfies the requirement, so
+    | an admin re-enabling the permission for someone who has a number does not
+    | have to retype it. Enabling it for someone who never had one is refused.
+    */
+
+    private function notificationRules(Request $request, ?User $user = null): array
+    {
+        $wantsNotifications = $request->boolean('receive_notifications');
+        $alreadyHasPhone    = $user && filled($user->phone);
+
+        return [
+            'phone' => $wantsNotifications && ! $alreadyHasPhone
+                ? 'required|string|max:20'
+                : 'nullable|string|max:20',
+        ];
+    }
+
+    private function notificationMessages(): array
+    {
+        return [
+            'phone.required' => 'Users who receive notifications must have a phone number.',
+            'phone.max'      => 'The phone number may not be longer than 20 characters.',
+        ];
     }
 
     /**

@@ -66,7 +66,9 @@
                     <tr>
                         <th>{{ __('User') }}</th>
                         <th>{{ __('Email') }}</th>
+                        <th>{{ __('Phone') }}</th>
                         <th>{{ __('Role') }}</th>
+                        <th>{{ __('Notifications') }}</th>
                         <th>{{ __('Created At') }}</th>
                         <th style="text-align: inherit;">{{ __('Actions') }}</th>
                     </tr>
@@ -83,6 +85,7 @@
                                 </div>
                             </td>
                             <td class="cell-muted">{{ $user->email }}</td>
+                            <td class="cell-mono">{{ $user->phone ?: '—' }}</td>
                             <td>
                                 @if ($user->isAdmin())
                                     <span class="badge badge-blue">{{ __('Admin') }}</span>
@@ -90,6 +93,17 @@
                                     <span class="badge badge-green">{{ __('Warehouse Manager') }}</span>
                                 @else
                                     <span class="badge badge-gray">{{ __('Warehouse Employee') }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{-- Enabled but no phone = misconfigured: the
+                                     permission is set yet nothing can reach them. --}}
+                                @if ($user->canReceiveNotifications())
+                                    <span class="badge badge-green">&#10003; {{ __('Enabled') }}</span>
+                                @elseif ($user->receive_notifications)
+                                    <span class="badge badge-amber">{{ __('No phone') }}</span>
+                                @else
+                                    <span class="badge badge-gray">&mdash; {{ __('Disabled') }}</span>
                                 @endif
                             </td>
                             <td class="cell-muted">{{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</td>
@@ -113,7 +127,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 40px; color: #888;">
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #888;">
                                 {{ __('No users found matching criteria.') }}
                             </td>
                         </tr>

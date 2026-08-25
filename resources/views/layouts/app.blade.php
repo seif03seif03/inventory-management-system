@@ -96,6 +96,9 @@
                             <a href="{{ route('users.index') }}" class="sidebar-link {{ request()->is('users*') ? 'active' : '' }}">
                                 <i class="fa-solid fa-users"></i> {{ __('Users') }}
                             </a>
+                            <a href="{{ route('activity-logs.index') }}" class="sidebar-link {{ request()->is('activity-logs*') ? 'active' : '' }}">
+                                <i class="fa-solid fa-clipboard-list"></i> {{ __('Activity Logs') }}
+                            </a>
                         @endif
                         <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->is('profile*') ? 'active' : '' }}">
                             <i class="fa-solid fa-user-gear"></i> {{ __('Profile') }}
@@ -137,6 +140,50 @@
                 </div>
 
                 <div class="topbar-right">
+
+                    {{-- Notification bell.
+                         Only rendered for users holding receive_notifications
+                         (with a phone number) — LowStockNotifier enforces that
+                         itself, so the view cannot leak alerts to someone who
+                         was not granted the permission. --}}
+                    @auth
+                        @php
+                            $lowStockAlerts = App\Support\LowStockNotifier::for(auth()->user());
+                        @endphp
+
+                        @if (auth()->user()->canReceiveNotifications())
+                            <div class="notif-wrap">
+                                <button type="button" class="btn btn-secondary btn-sm" id="notifToggle"
+                                        aria-haspopup="true" aria-expanded="false"
+                                        title="{{ __('Notifications') }}">
+                                    <i class="fa-regular fa-bell"></i>
+                                    @if ($lowStockAlerts->isNotEmpty())
+                                        <span class="notif-badge">{{ $lowStockAlerts->count() }}</span>
+                                    @endif
+                                </button>
+
+                                <div class="notif-panel" id="notifPanel" hidden>
+                                    <div class="notif-head">{{ __('Low Stock Alerts') }}</div>
+
+                                    @forelse ($lowStockAlerts as $alert)
+                                        <a href="{{ route('reports.low-stock', ['product_id' => $alert->product_id]) }}" class="notif-item">
+                                            <strong>{{ $alert->product_name }}</strong>
+                                            <span>
+                                                {{ $alert->warehouse_name }} &middot;
+                                                {{ (int) $alert->current_stock }} / {{ (int) $alert->minimum_stock }}
+                                            </span>
+                                        </a>
+                                    @empty
+                                        <div class="notif-empty">{{ __('Nothing needs attention.') }}</div>
+                                    @endforelse
+
+                                    @if ($lowStockAlerts->isNotEmpty())
+                                        <a href="{{ route('reports.low-stock') }}" class="notif-foot">{{ __('View all') }}</a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @endauth
 
                     {{-- Language Switcher Button --}}
                     @if (app()->getLocale() === 'ar')
@@ -198,6 +245,35 @@
                         appShell.classList.toggle('sidebar-collapsed');
                         const isCollapsed = appShell.classList.contains('sidebar-collapsed');
                         localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+                    }
+                });
+            }
+
+            // Notification bell dropdown. Only present for users holding the
+            // receive_notifications permission, so guard before binding.
+            const notifToggle = document.getElementById('notifToggle');
+            const notifPanel = document.getElementById('notifPanel');
+
+            if (notifToggle && notifPanel) {
+                notifToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const open = !notifPanel.hidden;
+                    notifPanel.hidden = open;
+                    notifToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+                });
+
+                // Click anywhere else, or press Escape, to dismiss.
+                document.addEventListener('click', () => {
+                    notifPanel.hidden = true;
+                    notifToggle.setAttribute('aria-expanded', 'false');
+                });
+
+                notifPanel.addEventListener('click', (e) => e.stopPropagation());
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        notifPanel.hidden = true;
+                        notifToggle.setAttribute('aria-expanded', 'false');
                     }
                 });
             }

@@ -932,3 +932,51 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   .stat-grid { grid-template-columns: 1fr; }
   .report-card-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------------------------------------------------------------------------
+   Notification bell (navbar)
+   Appended to the existing stylesheet rather than replacing any rules, and
+   scoped under .notif-* so nothing else is affected.
+--------------------------------------------------------------------------- */
+.notif-wrap { position: relative; display: inline-flex; }
+
+.notif-badge {
+  position: absolute; top: -5px; inset-inline-end: -5px;
+  min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px;
+  background: var(--color-danger); color: #fff;
+  font-size: 10px; font-weight: 700; line-height: 17px; text-align: center;
+}
+
+.notif-panel {
+  position: absolute; top: calc(100% + 8px); inset-inline-end: 0;
+  width: 310px; max-height: 380px; overflow-y: auto; z-index: 50;
+  background: #fff;
+  border: 1px solid var(--color-border, #DADCE0);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.13);
+}
+.notif-panel[hidden] { display: none; }
+
+.notif-head {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--color-border, #DADCE0);
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  color: var(--color-text-muted, #5F6368);
+}
+
+.notif-item {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--color-border-soft, #E8EAED);
+  text-decoration: none; color: inherit;
+}
+.notif-item:hover { background: var(--color-bg-soft, #F8F9FA); }
+.notif-item strong { font-size: 13px; }
+.notif-item span { font-size: 11px; color: var(--color-text-muted, #5F6368); }
+
+.notif-empty,
+.notif-foot { padding: 13px; font-size: 12px; text-align: center; }
+.notif-empty { color: var(--color-text-muted, #5F6368); }
+.notif-foot { display: block; text-decoration: none; font-weight: 600; color: var(--color-accent, #1A73E8); }
+.notif-foot:hover { background: var(--color-bg-soft, #F8F9FA); }

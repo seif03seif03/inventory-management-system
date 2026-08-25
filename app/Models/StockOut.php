@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class StockOut extends Model
 {
+    use LogsActivity;
+
     /**
      * Laravel converts "StockOut" → "stock_outs" automatically,
      * which matches our migration, so no $table property needed.

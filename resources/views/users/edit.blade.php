@@ -62,6 +62,43 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value="{{ old('phone', $user->phone) }}"
+                            class="form-control"
+                            placeholder="+201012345678"
+                            maxlength="20"
+                        >
+                        <span class="form-hint" style="font-size:11px;color:var(--color-text-muted,#5F6368);">
+                            Required only for users who receive notifications.
+                        </span>
+                        @error('phone')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group full">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input
+                                type="checkbox"
+                                name="receive_notifications"
+                                value="1"
+                                {{ old('receive_notifications', $user->receive_notifications) ? 'checked' : '' }}
+                            >
+                            <span>Receive notifications</span>
+                        </label>
+                        <span class="form-hint" style="font-size:11px;color:var(--color-text-muted,#5F6368);">
+                            Sends low-stock alerts to this user. Requires a phone number.
+                        </span>
+                        @error('receive_notifications')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
                         <label for="role_id">System Role <span style="color:var(--color-danger);">*</span></label>
                         <select id="role_id" name="role_id" class="form-control" required>
                             <option value="">Select a role...</option>

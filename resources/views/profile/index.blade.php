@@ -70,6 +70,44 @@
                         @enderror
                     </div>
 
+                    <div class="form-group full">
+                        <label for="phone">
+                            {{ __('Phone Number') }}
+                            @if ($user->receive_notifications)
+                                <span style="color:var(--color-danger);">*</span>
+                            @endif
+                        </label>
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value="{{ old('phone', $user->phone) }}"
+                            class="form-control"
+                            placeholder="+201012345678"
+                            maxlength="20"
+                            @if ($user->receive_notifications) required @endif
+                        >
+                        @error('phone')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- Role and notification permission are shown read-only.
+                         Only an administrator can change them, so the profile
+                         form deliberately does not submit those fields. --}}
+                    <div class="form-group full">
+                        <label>{{ __('Role') }}</label>
+                        <p style="margin:0;">
+                            <span class="badge badge-blue">{{ __($user->role?->name ?? 'User') }}</span>
+                            @if ($user->receive_notifications)
+                                <span class="badge badge-green">&#10003; {{ __('Receives notifications') }}</span>
+                            @endif
+                        </p>
+                        <span class="form-hint" style="font-size:11px;color:var(--color-text-muted,#5F6368);">
+                            {{ __('Only an administrator can change your role or notification permission.') }}
+                        </span>
+                    </div>
+
                     <div class="form-group full" style="border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 4px;">
                         <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 12px; color: var(--color-text);">Change Password</h3>
                         <p class="hint" style="margin-bottom: 12px;">Leave blank if you do not want to change your password.</p>
