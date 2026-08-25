@@ -102,15 +102,15 @@ class InventoryAdjustmentController extends Controller
             'quantities'       => 'required|array|min:1',
             'quantities.*'     => 'required|integer|min:1',
         ], [
-            'reason.required'        => 'Choose why the stock is being adjusted.',
-            'reason.in'              => 'That is not a recognised adjustment reason.',
-            'products.required'      => 'Add at least one product to adjust.',
-            'products.*.required'    => 'Choose a product on every item row.',
-            'products.*.exists'      => 'One of the selected products does not exist or is inactive.',
-            'directions.*.in'        => 'Each row must either increase or decrease stock.',
-            'quantities.*.required'  => 'Enter a quantity on every item row.',
-            'quantities.*.integer'   => 'Quantity must be a whole number.',
-            'quantities.*.min'       => 'Quantity must be at least 1.',
+            'reason.required'        => __('Choose why the stock is being adjusted.'),
+            'reason.in'              => __('That is not a recognised adjustment reason.'),
+            'products.required'      => __('Add at least one product to adjust.'),
+            'products.*.required'    => __('Choose a product on every item row.'),
+            'products.*.exists'      => __('One of the selected products does not exist or is inactive.'),
+            'directions.*.in'        => __('Each row must either increase or decrease stock.'),
+            'quantities.*.required'  => __('Enter a quantity on every item row.'),
+            'quantities.*.integer'   => __('Quantity must be a whole number.'),
+            'quantities.*.min'       => __('Quantity must be at least 1.'),
         ]);
 
         // The three arrays are read position-by-position, so a hand-crafted
@@ -120,7 +120,7 @@ class InventoryAdjustmentController extends Controller
             || count($validated['products']) !== count($validated['directions'])) {
             return back()
                 ->withInput()
-                ->with('error', 'Some item rows were incomplete. Please check every row and try again.');
+                ->with('error', __('Some item rows were incomplete. Please check every row and try again.'));
         }
 
         $warehouseId = (int) $validated['warehouse_id'];
@@ -162,8 +162,11 @@ class InventoryAdjustmentController extends Controller
             if (abs($net) > $available) {
                 $name = $productNames[$productId] ?? "Product #{$productId}";
 
-                $stockErrors[] = "Cannot reduce \"{$name}\" by " . abs($net)
-                               . " — only {$available} in stock at this warehouse.";
+                $stockErrors[] = __('Cannot reduce ":name" by :requested — only :available in stock at this warehouse.', [
+                    'name'      => $name,
+                    'requested' => abs($net),
+                    'available' => $available,
+                ]);
             }
         }
 
@@ -219,7 +222,7 @@ class InventoryAdjustmentController extends Controller
 
         return redirect()
             ->route('adjustments.show', $adjustment)
-            ->with('success', 'Stock adjustment saved and inventory updated.');
+            ->with('success', __('Stock adjustment saved and inventory updated.'));
     }
 
     /**

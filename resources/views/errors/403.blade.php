@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', '403 Forbidden')
-@section('subtitle', 'Access Restricted')
+@section('title', __('403 Forbidden'))
+@section('subtitle', __('Access Restricted'))
 
 @section('content')
     <div class="card" style="max-width: 540px; margin: 40px auto; text-align: center;">
@@ -20,7 +20,7 @@
 
             <div style="display: flex; gap: 12px; justify-content: center;">
                 <a href="{{ route('dashboard') }}" class="btn btn-primary">
-                    <i class="fa-solid fa-house"></i> Return to Dashboard
+                    <i class="fa-solid fa-house"></i> {{ __('Return to Dashboard') }}
                 </a>
             </div>
         </div>

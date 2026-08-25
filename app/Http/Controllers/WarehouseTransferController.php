@@ -101,14 +101,14 @@ class WarehouseTransferController extends Controller
             'quantities'        => 'required|array|min:1',
             'quantities.*'      => 'required|integer|min:1',
         ], [
-            'to_warehouse_id.different'  => 'The source and destination warehouses must be different.',
-            'products.required'          => 'Add at least one product to transfer.',
-            'products.*.exists'          => 'One of the selected products does not exist.',
-            'quantities.*.min'           => 'Quantity must be at least 1.',
+            'to_warehouse_id.different'  => __('The source and destination warehouses must be different.'),
+            'products.required'          => __('Add at least one product to transfer.'),
+            'products.*.exists'          => __('One of the selected products does not exist.'),
+            'quantities.*.min'           => __('Quantity must be at least 1.'),
         ]);
 
         if (count($validated['products']) !== count($validated['quantities'])) {
-            return back()->withInput()->with('error', 'Some item rows were incomplete.');
+            return back()->withInput()->with('error', __('Some item rows were incomplete.'));
         }
 
         // ---------------------------------------------------------------
@@ -131,7 +131,11 @@ class WarehouseTransferController extends Controller
                 $product = Product::find($productId);
                 return back()
                     ->withInput()
-                    ->with('error', "Insufficient stock for \"{$product->name}\". Available: {$available}, Requested: {$totalQty}.");
+                    ->with('error', __('Insufficient stock for ":name". Available: :available. Requested: :requested.', [
+                        'name'      => $product->name,
+                        'available' => $available,
+                        'requested' => $totalQty,
+                    ]));
             }
         }
 
@@ -193,7 +197,7 @@ class WarehouseTransferController extends Controller
 
         return redirect()
             ->route('transfers.show', $transfer)
-            ->with('success', 'Transfer completed and inventory updated.');
+            ->with('success', __('Transfer completed and inventory updated.'));
     }
 
     /**

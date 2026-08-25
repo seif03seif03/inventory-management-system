@@ -102,7 +102,7 @@
                     @forelse ($transfers as $transfer)
                         <tr>
                             <td class="cell-mono cell-primary">{{ $transfer->reference_number }}</td>
-                            <td class="cell-muted">{{ $transfer->transfer_date->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $transfer->transfer_date->translatedFormat('d M Y') }}</td>
                             <td class="cell-muted">
                                 <i class="fa-solid fa-warehouse" style="margin-right:4px;margin-left:4px;opacity:.5;"></i>
                                 {{ $transfer->fromWarehouse->name }}

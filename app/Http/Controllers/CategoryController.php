@@ -42,7 +42,7 @@ class CategoryController extends Controller
 
         return redirect()
             ->route('categories.index')
-            ->with('success', 'Category created successfully.');
+            ->with('success', __('Category created successfully.'));
     }
 
     public function show(Category $category)
@@ -61,7 +61,7 @@ class CategoryController extends Controller
 
         return redirect()
             ->route('categories.index')
-            ->with('success', 'Category updated successfully.');
+            ->with('success', __('Category updated successfully.'));
     }
 
     public function destroy(Category $category)
@@ -70,14 +70,14 @@ class CategoryController extends Controller
         // used to CASCADE, which meant this button deleted every product in the
         // category and still reported success — silent data loss. Ask first.
         if ($category->products()->exists()) {
-            return back()->with('error', "\"{$category->name}\" still has products and cannot be deleted. Move those products to another category first.");
+            return back()->with('error', __('":name" still has products and cannot be deleted. Move those products to another category first.', ['name' => $category->name]));
         }
 
         $category->delete();
 
         return redirect()
             ->route('categories.index')
-            ->with('success', 'Category deleted successfully.');
+            ->with('success', __('Category deleted successfully.'));
     }
 
     private function validatedCategory(Request $request): array

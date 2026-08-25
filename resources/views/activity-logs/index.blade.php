@@ -75,7 +75,7 @@
                 <tbody>
                     @forelse ($logs as $log)
                         <tr>
-                            <td class="cell-muted">{{ $log->created_at->format('d M Y H:i') }}</td>
+                            <td class="cell-muted">{{ $log->created_at->translatedFormat('d M Y H:i') }}</td>
                             <td class="cell-primary">
                                 {{-- Null when the account was deleted; the entry itself survives. --}}
                                 {{ $log->user->name ?? __('System') }}

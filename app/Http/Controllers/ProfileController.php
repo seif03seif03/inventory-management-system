@@ -42,14 +42,14 @@ class ProfileController extends Controller
             'current_password' => 'nullable|required_with:password|string',
             'password'         => 'nullable|string|min:8|confirmed',
         ], [
-            'name.required'              => 'Please enter your name.',
-            'email.required'             => 'Please enter your email address.',
-            'email.unique'               => 'This email address is already in use.',
-            'phone.required'             => 'Users who receive notifications must have a phone number.',
-            'phone.max'                  => 'The phone number may not be longer than 20 characters.',
-            'current_password.required_with' => 'Please enter your current password to set a new password.',
-            'password.min'               => 'The new password must be at least 8 characters.',
-            'password.confirmed'         => 'The new password confirmation does not match.',
+            'name.required'              => __('Please enter your name.'),
+            'email.required'             => __('Please enter your email address.'),
+            'email.unique'               => __('This email address is already in use.'),
+            'phone.required'             => __('Users who receive notifications must have a phone number.'),
+            'phone.max'                  => __('The phone number may not be longer than 20 characters.'),
+            'current_password.required_with' => __('Please enter your current password to set a new password.'),
+            'password.min'               => __('The new password must be at least 8 characters.'),
+            'password.confirmed'         => __('The new password confirmation does not match.'),
         ]);
 
         if (! empty($validated['password'])) {
@@ -70,6 +70,6 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', __('Profile updated successfully.'));
     }
 }

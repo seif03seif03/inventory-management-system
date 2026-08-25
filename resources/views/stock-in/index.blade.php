@@ -94,7 +94,7 @@
                     @forelse ($stockIns as $stockIn)
                         <tr>
                             <td class="cell-mono cell-primary">{{ $stockIn->reference_number }}</td>
-                            <td class="cell-muted">{{ $stockIn->receipt_date->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $stockIn->receipt_date->translatedFormat('d M Y') }}</td>
                             <td class="cell-muted">{{ $stockIn->supplier->name }}</td>
                             <td class="cell-muted">{{ $stockIn->warehouse->name }}</td>
                             <td class="cell-mono">{{ $stockIn->items_count }}</td>

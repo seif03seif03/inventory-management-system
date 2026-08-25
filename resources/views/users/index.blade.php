@@ -106,7 +106,7 @@
                                     <span class="badge badge-gray">&mdash; {{ __('Disabled') }}</span>
                                 @endif
                             </td>
-                            <td class="cell-muted">{{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</td>
+                            <td class="cell-muted">{{ $user->created_at ? $user->created_at->translatedFormat('d M Y') : '-' }}</td>
                             <td>
                                 <div class="row-actions" style="justify-content: flex-start;">
                                     <a href="{{ route('users.edit', $user) }}" class="btn btn-secondary btn-sm btn-icon" title="{{ __('Edit') }}">

@@ -47,12 +47,21 @@ class SupplierController extends Controller
 
         Supplier::create($validated);
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier created successfully.');
+        return redirect()->route('suppliers.index')->with('success', __('Supplier created successfully.'));
     }
 
     public function show(Supplier $supplier)
     {
-        return view('suppliers.show', compact('supplier'));
+        // The page used to be a static mockup showing one hardcoded supplier's
+        // details regardless of which record was opened. These are the real
+        // receipts for THIS supplier.
+        $receipts = $supplier->stockIns()
+            ->with('warehouse')
+            ->withSum('items', 'quantity')
+            ->latest('receipt_date')
+            ->paginate(10);
+
+        return view('suppliers.show', compact('supplier', 'receipts'));
     }
 
     public function edit(Supplier $supplier)
@@ -72,7 +81,7 @@ class SupplierController extends Controller
 
         $supplier->update($validated);
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier updated successfully.');
+        return redirect()->route('suppliers.index')->with('success', __('Supplier updated successfully.'));
     }
 
     public function destroy(Supplier $supplier)
@@ -81,11 +90,11 @@ class SupplierController extends Controller
         // supplier named on a receipt would orphan that receipt and the
         // database refuses it. We ask first and explain.
         if ($supplier->hasStockHistory()) {
-            return back()->with('error', "\"{$supplier->name}\" is named on stock receipts and cannot be deleted. Mark it inactive instead.");
+            return back()->with('error', __('":name" is named on stock receipts and cannot be deleted. Mark it inactive instead.', ['name' => $supplier->name]));
         }
 
         $supplier->delete();
 
-        return redirect()->route('suppliers.index')->with('success', 'Supplier deleted successfully.');
+        return redirect()->route('suppliers.index')->with('success', __('Supplier deleted successfully.'));
     }
 }

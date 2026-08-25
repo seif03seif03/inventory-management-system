@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Low Stock Report')
-@section('subtitle', 'Products at or below their minimum stock')
+@section('title', __('Low Stock Report'))
+@section('subtitle', __('Products at or below their minimum stock'))
 
 @section('content')
 
     <div class="card">
         <div class="card-header">
             <div>
-                <h2>Low Stock Report</h2>
+                <h2>{{ __('Low Stock Report') }}</h2>
                 <p>{{ $lowStockRows->total() }} low-stock {{ Str::plural('row', $lowStockRows->total()) }} found</p>
             </div>
 
@@ -18,7 +18,7 @@
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('reports.low-stock') }}" method="GET" class="filters-bar">
                 <select name="product_id" class="select-field" onchange="this.form.submit()">
-                    <option value="">All Products</option>
+                    <option value="">{{ __('All Products') }}</option>
                     @foreach ($products as $product)
                         <option value="{{ $product->id }}" {{ request('product_id') == $product->id ? 'selected' : '' }}>
                             {{ $product->name }}
@@ -27,7 +27,7 @@
                 </select>
 
                 <select name="category_id" class="select-field" onchange="this.form.submit()">
-                    <option value="">All Categories</option>
+                    <option value="">{{ __('All Categories') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
                             {{ $category->name }}
@@ -36,7 +36,7 @@
                 </select>
 
                 <select name="warehouse_id" class="select-field" onchange="this.form.submit()">
-                    <option value="">All Warehouses</option>
+                    <option value="">{{ __('All Warehouses') }}</option>
                     @foreach ($warehouses as $warehouse)
                         <option value="{{ $warehouse->id }}" {{ request('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
                             {{ $warehouse->name }}
@@ -45,7 +45,7 @@
                 </select>
 
                 @if (request()->hasAny(['product_id', 'category_id', 'warehouse_id']))
-                    <a href="{{ route('reports.low-stock') }}" class="btn btn-secondary btn-sm">Clear</a>
+                    <a href="{{ route('reports.low-stock') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
                 @endif
             </form>
         </div>
@@ -54,13 +54,13 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>SKU</th>
-                        <th>Warehouse</th>
-                        <th>Current Stock</th>
-                        <th>Minimum Stock</th>
-                        <th>Difference</th>
-                        <th>Status</th>
+                        <th>{{ __('Product') }}</th>
+                        <th>{{ __('SKU') }}</th>
+                        <th>{{ __('Warehouse') }}</th>
+                        <th>{{ __('Current Stock') }}</th>
+                        <th>{{ __('Minimum Stock') }}</th>
+                        <th>{{ __('Difference') }}</th>
+                        <th>{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,11 +72,11 @@
                             <td class="cell-mono">{{ (int) $row->current_stock }}</td>
                             <td class="cell-mono">{{ $row->minimum_stock }}</td>
                             <td class="cell-mono">{{ (int) $row->current_stock - (int) $row->minimum_stock }}</td>
-                            <td><span class="badge badge-red">Low Stock</span></td>
+                            <td><span class="badge badge-red">{{ __('Low Stock') }}</span></td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">No low-stock products found.</td>
+                            <td colspan="7" style="text-align: center; padding: 40px;">{{ __('No low-stock products found.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

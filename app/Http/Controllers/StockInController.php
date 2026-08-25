@@ -140,15 +140,15 @@ class StockInController extends Controller
         ], [
             // Default messages for array rules read like "The products.0 field
             // is required", so we give friendlier ones.
-            'products.required'     => 'Add at least one product to the receipt.',
-            'products.*.required'   => 'Choose a product on every item row (or remove the empty row).',
-            'products.*.exists'     => 'One of the selected products does not exist.',
-            'quantities.*.required' => 'Enter a quantity on every item row.',
-            'quantities.*.integer'  => 'Quantity must be a whole number.',
-            'quantities.*.min'      => 'Quantity must be at least 1.',
-            'unit_costs.*.required' => 'Enter a unit cost on every item row.',
-            'unit_costs.*.numeric'  => 'Unit cost must be a number.',
-            'unit_costs.*.min'      => 'Unit cost cannot be negative.',
+            'products.required'     => __('Add at least one product to the receipt.'),
+            'products.*.required'   => __('Choose a product on every item row (or remove the empty row).'),
+            'products.*.exists'     => __('One of the selected products does not exist.'),
+            'quantities.*.required' => __('Enter a quantity on every item row.'),
+            'quantities.*.integer'  => __('Quantity must be a whole number.'),
+            'quantities.*.min'      => __('Quantity must be at least 1.'),
+            'unit_costs.*.required' => __('Enter a unit cost on every item row.'),
+            'unit_costs.*.numeric'  => __('Unit cost must be a number.'),
+            'unit_costs.*.min'      => __('Unit cost cannot be negative.'),
         ]);
 
         // The three item arrays are read position-by-position (row 0, row 1, ...),
@@ -158,7 +158,7 @@ class StockInController extends Controller
             || count($validated['products']) !== count($validated['unit_costs'])) {
             return back()
                 ->withInput()
-                ->with('error', 'Some item rows were incomplete. Please check every row and try again.');
+                ->with('error', __('Some item rows were incomplete. Please check every row and try again.'));
         }
 
         // ---------------------------------------------------------------
@@ -224,7 +224,7 @@ class StockInController extends Controller
 
         return redirect()
             ->route('stock-in.show', $stockIn)
-            ->with('success', 'Stock receipt saved and inventory updated.');
+            ->with('success', __('Stock receipt saved and inventory updated.'));
     }
 
     /**

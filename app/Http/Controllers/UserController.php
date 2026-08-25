@@ -64,13 +64,13 @@ class UserController extends Controller
                 'password' => 'required|string|min:8|confirmed',
             ], $this->notificationRules($request)),
             array_merge([
-                'name.required'     => 'Please enter the user\'s name.',
-                'email.required'    => 'Please enter an email address.',
-                'email.unique'      => 'This email address is already registered to another user.',
-                'role_id.required'  => 'Please select a system role for this user.',
-                'password.required' => 'Please enter a password for this user.',
-                'password.min'      => 'The password must be at least 8 characters long.',
-                'password.confirmed'=> 'The password confirmation does not match.',
+                'name.required'     => __('Please enter the user\'s name.'),
+                'email.required'    => __('Please enter an email address.'),
+                'email.unique'      => __('This email address is already registered to another user.'),
+                'role_id.required'  => __('Please select a system role for this user.'),
+                'password.required' => __('Please enter a password for this user.'),
+                'password.min'      => __('The password must be at least 8 characters long.'),
+                'password.confirmed'=> __('The password confirmation does not match.'),
             ], $this->notificationMessages())
         );
 
@@ -85,7 +85,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User account created successfully.');
+            ->with('success', __('User account created successfully.'));
     }
 
     /**
@@ -115,12 +115,12 @@ class UserController extends Controller
                 'password' => 'nullable|string|min:8|confirmed',
             ], $this->notificationRules($request, $user)),
             array_merge([
-                'name.required'     => 'Please enter the user\'s name.',
-                'email.required'    => 'Please enter an email address.',
-                'email.unique'      => 'This email address is already registered to another user.',
-                'role_id.required'  => 'Please select a system role.',
-                'password.min'      => 'The password must be at least 8 characters long.',
-                'password.confirmed'=> 'The password confirmation does not match.',
+                'name.required'     => __('Please enter the user\'s name.'),
+                'email.required'    => __('Please enter an email address.'),
+                'email.unique'      => __('This email address is already registered to another user.'),
+                'role_id.required'  => __('Please select a system role.'),
+                'password.min'      => __('The password must be at least 8 characters long.'),
+                'password.confirmed'=> __('The password confirmation does not match.'),
             ], $this->notificationMessages())
         );
 
@@ -145,7 +145,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User account updated successfully.');
+            ->with('success', __('User account updated successfully.'));
     }
 
     /*
@@ -176,8 +176,8 @@ class UserController extends Controller
     private function notificationMessages(): array
     {
         return [
-            'phone.required' => 'Users who receive notifications must have a phone number.',
-            'phone.max'      => 'The phone number may not be longer than 20 characters.',
+            'phone.required' => __('Users who receive notifications must have a phone number.'),
+            'phone.max'      => __('The phone number may not be longer than 20 characters.'),
         ];
     }
 
@@ -190,7 +190,7 @@ class UserController extends Controller
     {
         // 1. Prevent self-deletion
         if (Auth::id() === $user->id) {
-            return back()->with('error', 'You cannot delete your own account while logged in.');
+            return back()->with('error', __('You cannot delete your own account while logged in.'));
         }
 
         // 2. Prevent deleting the last Admin account
@@ -200,7 +200,7 @@ class UserController extends Controller
             })->count();
 
             if ($adminCount <= 1) {
-                return back()->with('error', 'Cannot delete the last remaining Administrator account.');
+                return back()->with('error', __('Cannot delete the last remaining Administrator account.'));
             }
         }
 
@@ -208,6 +208,6 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User account deleted successfully.');
+            ->with('success', __('User account deleted successfully.'));
     }
 }

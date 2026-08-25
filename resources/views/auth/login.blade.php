@@ -101,14 +101,14 @@
             <div class="auth-brand">
                 <div class="auth-brand-mark">IM</div>
                 <div class="auth-brand-text">
-                    <strong>Inventory</strong>
-                    <span>MANAGEMENT</span>
+                    <strong>{{ __('Inventory') }}</strong>
+                    <span>{{ __('MANAGEMENT') }}</span>
                 </div>
             </div>
 
             <div class="auth-header">
-                <h1>Sign in to your account</h1>
-                <p>Enter your credentials to access the system</p>
+                <h1>{{ __('Sign in to your account') }}</h1>
+                <p>{{ __('Enter your credentials to access the system') }}</p>
             </div>
 
             @if (session('info'))
@@ -133,7 +133,7 @@
                 @csrf
 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email">{{ __('Email Address') }}</label>
                     <input
                         type="email"
                         id="email"
@@ -147,7 +147,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">{{ __('Password') }}</label>
                     <input
                         type="password"
                         id="password"
@@ -160,11 +160,11 @@
 
                 <label class="form-check">
                     <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-                    <span>Remember me on this device</span>
+                    <span>{{ __('Remember me on this device') }}</span>
                 </label>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">
-                    <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                    <i class="fa-solid fa-right-to-bracket"></i> {{ __('Sign In') }}
                 </button>
             </form>
 

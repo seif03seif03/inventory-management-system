@@ -28,7 +28,7 @@
                 </div>
                 <div class="detail-field">
                     <div class="label">{{ __('Adjustment Date') }}</div>
-                    <div class="value">{{ $adjustment->adjustment_date->format('d M Y') }}</div>
+                    <div class="value">{{ $adjustment->adjustment_date->translatedFormat('d M Y') }}</div>
                 </div>
                 <div class="detail-field">
                     <div class="label">{{ __('Warehouse') }}</div>
@@ -139,7 +139,7 @@
                             <td class="cell-mono">
                                 {{ $movement->type === App\Models\StockMovement::TYPE_IN ? '+' : '-' }}{{ $movement->quantity }}
                             </td>
-                            <td class="cell-muted">{{ $movement->created_at->format('d M Y H:i') }}</td>
+                            <td class="cell-muted">{{ $movement->created_at->translatedFormat('d M Y H:i') }}</td>
                         </tr>
                     @empty
                         <tr>

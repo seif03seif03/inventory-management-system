@@ -68,7 +68,7 @@ class WarehouseController extends Controller
 
         return redirect()
             ->route('warehouses.index')
-            ->with('success', 'Warehouse created successfully.');
+            ->with('success', __('Warehouse created successfully.'));
     }
 
     public function show(Warehouse $warehouse)
@@ -94,7 +94,7 @@ class WarehouseController extends Controller
 
         return redirect()
             ->route('warehouses.index')
-            ->with('success', 'Warehouse updated successfully.');
+            ->with('success', __('Warehouse updated successfully.'));
     }
 
     public function destroy(Warehouse $warehouse)
@@ -104,13 +104,13 @@ class WarehouseController extends Controller
         // this delete once anything has moved through it. We ask first and
         // explain, rather than surfacing a raw constraint violation.
         if ($warehouse->hasStockHistory()) {
-            return back()->with('error', "\"{$warehouse->name}\" has stock history and cannot be deleted. Mark it inactive instead.");
+            return back()->with('error', __('":name" has stock history and cannot be deleted. Mark it inactive instead.', ['name' => $warehouse->name]));
         }
 
         $warehouse->delete();
 
         return redirect()
             ->route('warehouses.index')
-            ->with('success', 'Warehouse deleted successfully.');
+            ->with('success', __('Warehouse deleted successfully.'));
     }
 }

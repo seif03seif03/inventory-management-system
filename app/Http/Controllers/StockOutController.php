@@ -159,19 +159,19 @@ class StockOutController extends Controller
             'quantities'       => 'required|array|min:1',
             'quantities.*'     => 'required|integer|min:1',
         ], [
-            'products.required'     => 'Add at least one product to the issue.',
-            'products.*.required'   => 'Choose a product on every item row.',
-            'products.*.exists'     => 'One of the selected products does not exist.',
-            'quantities.*.required' => 'Enter a quantity on every item row.',
-            'quantities.*.integer'  => 'Quantity must be a whole number.',
-            'quantities.*.min'      => 'Quantity must be at least 1.',
+            'products.required'     => __('Add at least one product to the issue.'),
+            'products.*.required'   => __('Choose a product on every item row.'),
+            'products.*.exists'     => __('One of the selected products does not exist.'),
+            'quantities.*.required' => __('Enter a quantity on every item row.'),
+            'quantities.*.integer'  => __('Quantity must be a whole number.'),
+            'quantities.*.min'      => __('Quantity must be at least 1.'),
         ]);
 
         // Guard against a hand-crafted request where arrays have different lengths.
         if (count($validated['products']) !== count($validated['quantities'])) {
             return back()
                 ->withInput()
-                ->with('error', 'Some item rows were incomplete. Please check every row.');
+                ->with('error', __('Some item rows were incomplete. Please check every row.'));
         }
 
         $warehouseId = (int) $validated['warehouse_id'];
@@ -204,8 +204,11 @@ class StockOutController extends Controller
             if ($requested > $available) {
                 $name = $productNames[$productId] ?? "Product #{$productId}";
 
-                $stockErrors[] = "Insufficient stock for \"{$name}\". "
-                               . "Available: {$available}. Requested: {$requested}.";
+                $stockErrors[] = __('Insufficient stock for ":name". Available: :available. Requested: :requested.', [
+                    'name'      => $name,
+                    'available' => $available,
+                    'requested' => $requested,
+                ]);
             }
         }
 
@@ -269,7 +272,7 @@ class StockOutController extends Controller
 
         return redirect()
             ->route('stock-out.show', $stockOut)
-            ->with('success', 'Stock issue saved and inventory updated.');
+            ->with('success', __('Stock issue saved and inventory updated.'));
     }
 
     /**

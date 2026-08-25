@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'New Stock Receipt')
-@section('subtitle', 'Record products received from a supplier')
+@section('title', __('New Stock Receipt'))
+@section('subtitle', __('Record products received from a supplier'))
 
 @section('content')
 
     <div class="breadcrumb">
-        <a href="{{ route('stock-in.index') }}">Stock In</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>New Receipt</span>
+        <a href="{{ route('stock-in.index') }}">{{ __('Stock In') }}</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ __('New Receipt') }}</span>
     </div>
 
     @if (session('error'))
@@ -22,12 +22,12 @@
         @csrf
 
         <div class="card section" style="margin-top: 12px;">
-            <div class="card-header"><h2>Receipt Details</h2></div>
+            <div class="card-header"><h2>{{ __('Receipt Details') }}</h2></div>
             <div class="card-body">
                 <div class="form-grid">
-                    <div class="form-group"><label>Supplier *</label>
+                    <div class="form-group"><label>{{ __('Supplier *') }}</label>
                         <select name="supplier_id" class="form-control" required>
-                            <option value="">Select supplier</option>
+                            <option value="">{{ __('Select supplier') }}</option>
                             @foreach ($suppliers as $supplier)
                                 <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
                                     {{ $supplier->name }}
@@ -39,9 +39,9 @@
                         @enderror
                     </div>
 
-                    <div class="form-group"><label>Warehouse *</label>
+                    <div class="form-group"><label>{{ __('Warehouse *') }}</label>
                         <select name="warehouse_id" class="form-control" required>
-                            <option value="">Select warehouse</option>
+                            <option value="">{{ __('Select warehouse') }}</option>
                             @foreach ($warehouses as $warehouse)
                                 <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
                                     {{ $warehouse->name }}
@@ -53,7 +53,7 @@
                         @enderror
                     </div>
 
-                    <div class="form-group"><label>Receipt Date *</label>
+                    <div class="form-group"><label>{{ __('Receipt Date *') }}</label>
                         <input type="date" name="receipt_date" class="form-control"
                                value="{{ old('receipt_date', now()->format('Y-m-d')) }}" required>
                         @error('receipt_date')
@@ -61,7 +61,7 @@
                         @enderror
                     </div>
 
-                    <div class="form-group"><label>Reference Number *</label>
+                    <div class="form-group"><label>{{ __('Reference Number *') }}</label>
                         <input type="text" name="reference_number" class="form-control"
                                value="{{ old('reference_number') }}" placeholder="e.g. PO-4521" required>
                         @error('reference_number')
@@ -69,8 +69,8 @@
                         @enderror
                     </div>
 
-                    <div class="form-group full"><label>Notes</label>
-                        <textarea name="notes" class="form-control" placeholder="Optional notes about this receipt">{{ old('notes') }}</textarea>
+                    <div class="form-group full"><label>{{ __('Notes') }}</label>
+                        <textarea name="notes" class="form-control" placeholder="{{ __('Optional notes about this receipt') }}">{{ old('notes') }}</textarea>
                         @error('notes')
                             <span class="cell-muted">{{ $message }}</span>
                         @enderror
@@ -82,8 +82,8 @@
         <div class="card section">
             <div class="card-header">
                 <div>
-                    <h2>Items</h2>
-                    <p>Products included in this receipt</p>
+                    <h2>{{ __('Items') }}</h2>
+                    <p>{{ __('Products included in this receipt') }}</p>
                 </div>
             </div>
             <div class="card-body">
@@ -103,7 +103,7 @@
                 <div class="table-wrap line-items-table">
                     <table class="data-table">
                         <thead>
-                            <tr><th style="width:40%">Product</th><th>Quantity</th><th>Unit Cost</th><th>Total</th><th></th></tr>
+                            <tr><th style="width:40%">{{ __('Product') }}</th><th>{{ __('Quantity') }}</th><th>{{ __('Unit Cost') }}</th><th>{{ __('Total') }}</th><th></th></tr>
                         </thead>
                         {{-- On a validation failure we rebuild exactly the rows the user
                              submitted, using old(). A fresh form starts with one row. --}}
@@ -112,7 +112,7 @@
                                 <tr>
                                     <td>
                                         <select name="products[]" class="form-control" required>
-                                            <option value="">Select product</option>
+                                            <option value="">{{ __('Select product') }}</option>
                                             @foreach ($products as $product)
                                                 <option value="{{ $product->id }}" data-barcode="{{ $product->barcode }}" {{ $oldProductId == $product->id ? 'selected' : '' }}>
                                                     {{ $product->name }} ({{ $product->sku }})
@@ -150,7 +150,7 @@
                     <tr>
                         <td>
                             <select name="products[]" class="form-control" required>
-                                <option value="">Select product</option>
+                                <option value="">{{ __('Select product') }}</option>
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}" data-barcode="{{ $product->barcode }}">{{ $product->name }} ({{ $product->sku }})</option>
                                 @endforeach
@@ -163,13 +163,13 @@
                     </tr>
                 </template>
 
-                <button type="button" class="add-row-btn" id="addRowBtn"><i class="fa-solid fa-plus"></i> Add Product</button>
+                <button type="button" class="add-row-btn" id="addRowBtn"><i class="fa-solid fa-plus"></i> {{ __('Add Product') }}</button>
             </div>
 
             <div class="card-body" style="padding-top:0;">
                 <div class="form-actions">
-                    <a href="{{ route('stock-in.index') }}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Receipt</button>
+                    <a href="{{ route('stock-in.index') }}" class="btn btn-secondary">{{ __('Cancel') }}</a>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> {{ __('Save Receipt') }}</button>
                 </div>
             </div>
         </div>

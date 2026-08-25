@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'New Stock Issue')
-@section('subtitle', 'Record products distributed out of the warehouse')
+@section('title', __('New Stock Issue'))
+@section('subtitle', __('Record products distributed out of the warehouse'))
 
 @section('content')
 
     <div class="breadcrumb">
-        <a href="{{ route('stock-out.index') }}">Stock Out</a>
+        <a href="{{ route('stock-out.index') }}">{{ __('Stock Out') }}</a>
         <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
-        <span>New Issue</span>
+        <span>{{ __('New Issue') }}</span>
     </div>
 
     {{-- Session error (e.g. mismatched array lengths) --}}
@@ -25,7 +25,7 @@
         <div class="alert alert-danger" style="margin-top: 12px;">
             <i class="fa-solid fa-circle-exclamation"></i>
             <div>
-                <strong>Could not save issue — insufficient stock:</strong>
+                <strong>{{ __('Could not save issue — insufficient stock:') }}</strong>
                 <ul style="margin: 6px 0 0 18px;">
                     @foreach (session('stockErrors') as $stockError)
                         <li>{{ $stockError }}</li>
@@ -57,13 +57,13 @@
         @csrf
 
         <div class="card section" style="margin-top: 12px;">
-            <div class="card-header"><h2>Issue Details</h2></div>
+            <div class="card-header"><h2>{{ __('Issue Details') }}</h2></div>
             <div class="card-body">
                 <div class="form-grid">
 
-                    <div class="form-group"><label>Distributor *</label>
+                    <div class="form-group"><label>{{ __('Distributor *') }}</label>
                         <select name="distributor_id" class="form-control" required>
-                            <option value="">Select distributor</option>
+                            <option value="">{{ __('Select distributor') }}</option>
                             @foreach ($distributors as $distributor)
                                 <option value="{{ $distributor->id }}"
                                     {{ old('distributor_id') == $distributor->id ? 'selected' : '' }}>
@@ -77,9 +77,9 @@
                     </div>
 
                     {{-- When this changes, JS re-reads available stock for every row --}}
-                    <div class="form-group"><label>Warehouse *</label>
+                    <div class="form-group"><label>{{ __('Warehouse *') }}</label>
                         <select name="warehouse_id" id="warehouseSelect" class="form-control" required>
-                            <option value="">Select warehouse</option>
+                            <option value="">{{ __('Select warehouse') }}</option>
                             @foreach ($warehouses as $warehouse)
                                 <option value="{{ $warehouse->id }}"
                                     {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
@@ -92,7 +92,7 @@
                         @enderror
                     </div>
 
-                    <div class="form-group"><label>Issue Date *</label>
+                    <div class="form-group"><label>{{ __('Issue Date *') }}</label>
                         <input type="date" name="issue_date" class="form-control"
                                value="{{ old('issue_date', now()->format('Y-m-d')) }}" required>
                         @error('issue_date')
@@ -100,7 +100,7 @@
                         @enderror
                     </div>
 
-                    <div class="form-group"><label>Reference Number *</label>
+                    <div class="form-group"><label>{{ __('Reference Number *') }}</label>
                         <input type="text" name="reference_number" class="form-control"
                                value="{{ old('reference_number') }}" placeholder="e.g. SO-3312" required>
                         @error('reference_number')
@@ -108,9 +108,9 @@
                         @enderror
                     </div>
 
-                    <div class="form-group full"><label>Notes</label>
+                    <div class="form-group full"><label>{{ __('Notes') }}</label>
                         <textarea name="notes" class="form-control"
-                                  placeholder="Optional notes about this issue">{{ old('notes') }}</textarea>
+                                  placeholder="{{ __('Optional notes about this issue') }}">{{ old('notes') }}</textarea>
                         @error('notes')
                             <span class="cell-muted">{{ $message }}</span>
                         @enderror
@@ -123,8 +123,8 @@
         <div class="card section">
             <div class="card-header">
                 <div>
-                    <h2>Items</h2>
-                    <p>Products included in this issue</p>
+                    <h2>{{ __('Items') }}</h2>
+                    <p>{{ __('Products included in this issue') }}</p>
                 </div>
             </div>
             <div class="card-body">
@@ -148,9 +148,9 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th style="width:45%">Product</th>
-                                <th>Available Stock</th>
-                                <th>Quantity</th>
+                                <th style="width:45%">{{ __('Product') }}</th>
+                                <th>{{ __('Available Stock') }}</th>
+                                <th>{{ __('Quantity') }}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -161,7 +161,7 @@
                                 <tr>
                                     <td>
                                         <select name="products[]" class="form-control product-select" required>
-                                            <option value="">Select product</option>
+                                            <option value="">{{ __('Select product') }}</option>
                                             @foreach ($products as $product)
                                                 <option value="{{ $product->id }}" data-barcode="{{ $product->barcode }}"
                                                     {{ $oldProductId == $product->id ? 'selected' : '' }}>
@@ -199,7 +199,7 @@
                     <tr>
                         <td>
                             <select name="products[]" class="form-control product-select" required>
-                                <option value="">Select product</option>
+                                <option value="">{{ __('Select product') }}</option>
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}" data-barcode="{{ $product->barcode }}">
                                         {{ $product->name }} ({{ $product->sku }})
@@ -218,15 +218,15 @@
                 </template>
 
                 <button type="button" class="add-row-btn" id="addRowBtn">
-                    <i class="fa-solid fa-plus"></i> Add Product
+                    <i class="fa-solid fa-plus"></i> {{ __('Add Product') }}
                 </button>
             </div>
 
             <div class="card-body" style="padding-top:0;">
                 <div class="form-actions">
-                    <a href="{{ route('stock-out.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('stock-out.index') }}" class="btn btn-secondary">{{ __('Cancel') }}</a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-check"></i> Save Issue
+                        <i class="fa-solid fa-check"></i> {{ __('Save Issue') }}
                     </button>
                 </div>
             </div>

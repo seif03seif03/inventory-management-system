@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Add New User')
-@section('subtitle', 'Create a new user account and assign a role')
+@section('title', __('Add New User'))
+@section('subtitle', __('Create a new user account and assign a role'))
 
 @section('content')
 
     <div class="card" style="max-width: 680px;">
         <div class="card-header">
             <div>
-                <h2>User Information</h2>
-                <p>Fill in the details to register a new user</p>
+                <h2>{{ __('User Information') }}</h2>
+                <p>{{ __('Fill in the details to register a new user') }}</p>
             </div>
             <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-arrow-left"></i> Back to Users
+                <i class="fa-solid fa-arrow-left"></i> {{ __('Back to Users') }}
             </a>
         </div>
 
@@ -31,7 +31,7 @@
                 <div class="form-grid">
 
                     <div class="form-group full">
-                        <label for="name">Full Name <span style="color:var(--color-danger);">*</span></label>
+                        <label for="name">{{ __('Full Name') }} <span style="color:var(--color-danger);">*</span></label>
                         <input
                             type="text"
                             id="name"
@@ -47,7 +47,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="email">Email Address <span style="color:var(--color-danger);">*</span></label>
+                        <label for="email">{{ __('Email Address') }} <span style="color:var(--color-danger);">*</span></label>
                         <input
                             type="email"
                             id="email"
@@ -63,7 +63,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="phone">Phone Number</label>
+                        <label for="phone">{{ __('Phone Number') }}</label>
                         <input
                             type="text"
                             id="phone"
@@ -74,7 +74,7 @@
                             maxlength="20"
                         >
                         <span class="form-hint" style="font-size:11px;color:var(--color-text-muted,#5F6368);">
-                            Required only for users who receive notifications.
+                            {{ __('Required only for users who receive notifications.') }}
                         </span>
                         @error('phone')
                             <span class="form-error">{{ $message }}</span>
@@ -89,10 +89,10 @@
                                 value="1"
                                 {{ old('receive_notifications', false) ? 'checked' : '' }}
                             >
-                            <span>Receive notifications</span>
+                            <span>{{ __('Receive notifications') }}</span>
                         </label>
                         <span class="form-hint" style="font-size:11px;color:var(--color-text-muted,#5F6368);">
-                            Sends low-stock alerts to this user. Requires a phone number.
+                            {{ __('Sends low-stock alerts to this user. Requires a phone number.') }}
                         </span>
                         @error('receive_notifications')
                             <span class="form-error">{{ $message }}</span>
@@ -100,9 +100,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="role_id">System Role <span style="color:var(--color-danger);">*</span></label>
+                        <label for="role_id">{{ __('System Role') }} <span style="color:var(--color-danger);">*</span></label>
                         <select id="role_id" name="role_id" class="form-control" required>
-                            <option value="">Select a role...</option>
+                            <option value="">{{ __('Select a role...') }}</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
                                     {{ $role->name }}
@@ -115,13 +115,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Password <span style="color:var(--color-danger);">*</span></label>
+                        <label for="password">{{ __('Password') }} <span style="color:var(--color-danger);">*</span></label>
                         <input
                             type="password"
                             id="password"
                             name="password"
                             class="form-control"
-                            placeholder="At least 8 characters"
+                            placeholder="{{ __('At least 8 characters') }}"
                             required
                         >
                         @error('password')
@@ -130,13 +130,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="password_confirmation">Confirm Password <span style="color:var(--color-danger);">*</span></label>
+                        <label for="password_confirmation">{{ __('Confirm Password') }} <span style="color:var(--color-danger);">*</span></label>
                         <input
                             type="password"
                             id="password_confirmation"
                             name="password_confirmation"
                             class="form-control"
-                            placeholder="Repeat password"
+                            placeholder="{{ __('Repeat password') }}"
                             required
                         >
                     </div>
@@ -144,9 +144,9 @@
                 </div>
 
                 <div class="form-actions">
-                    <a href="{{ route('users.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('users.index') }}" class="btn btn-secondary">{{ __('Cancel') }}</a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-check"></i> Create User Account
+                        <i class="fa-solid fa-check"></i> {{ __('Create User Account') }}
                     </button>
                 </div>
             </form>

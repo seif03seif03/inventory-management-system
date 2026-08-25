@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('subtitle', 'Overview of your warehouse inventory')
+@section('title', __('Dashboard'))
+@section('subtitle', __('Overview of your warehouse inventory'))
 
 @section('content')
 
@@ -13,7 +13,7 @@
                 <div class="stat-icon blue"><i class="fa-solid fa-box"></i></div>
             </div>
             <div class="stat-value">{{ number_format($totalProducts) }}</div>
-            <div class="stat-label">Total Products</div>
+            <div class="stat-label">{{ __('Total Products') }}</div>
         </div>
 
         <div class="stat-card">
@@ -21,7 +21,7 @@
                 <div class="stat-icon green"><i class="fa-solid fa-boxes-stacked"></i></div>
             </div>
             <div class="stat-value">{{ number_format($totalStock) }}</div>
-            <div class="stat-label">Total Stock</div>
+            <div class="stat-label">{{ __('Total Stock') }}</div>
         </div>
 
         <div class="stat-card">
@@ -29,7 +29,7 @@
                 <div class="stat-icon amber"><i class="fa-solid fa-truck-field"></i></div>
             </div>
             <div class="stat-value">{{ number_format($totalSuppliers) }}</div>
-            <div class="stat-label">Suppliers</div>
+            <div class="stat-label">{{ __('Suppliers') }}</div>
         </div>
 
         <div class="stat-card">
@@ -37,7 +37,7 @@
                 <div class="stat-icon gray"><i class="fa-solid fa-truck-fast"></i></div>
             </div>
             <div class="stat-value">{{ number_format($totalDistributors) }}</div>
-            <div class="stat-label">Distributors</div>
+            <div class="stat-label">{{ __('Distributors') }}</div>
         </div>
 
     </div>
@@ -50,7 +50,7 @@
                 <div class="stat-icon green"><i class="fa-solid fa-inbox"></i></div>
             </div>
             <div class="stat-value">{{ number_format($stockInToday) }}</div>
-            <div class="stat-label">Stock In Today</div>
+            <div class="stat-label">{{ __('Stock In Today') }}</div>
         </div>
 
         <div class="stat-card">
@@ -58,7 +58,7 @@
                 <div class="stat-icon blue"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
             </div>
             <div class="stat-value">{{ number_format($stockOutToday) }}</div>
-            <div class="stat-label">Stock Out Today</div>
+            <div class="stat-label">{{ __('Stock Out Today') }}</div>
         </div>
 
         <div class="stat-card">
@@ -66,7 +66,7 @@
                 <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
             </div>
             <div class="stat-value">{{ number_format($lowStockCount) }}</div>
-            <div class="stat-label">Low Stock Items</div>
+            <div class="stat-label">{{ __('Low Stock Items') }}</div>
         </div>
 
         <div class="stat-card">
@@ -75,7 +75,7 @@
             </div>
             {{-- Chart placeholder — Phase 4 will render real chart data here --}}
             <div class="stat-value">—</div>
-            <div class="stat-label">Stock Overview</div>
+            <div class="stat-label">{{ __('Stock Overview') }}</div>
         </div>
 
     </div>
@@ -84,14 +84,14 @@
     <div class="card section">
         <div class="card-header">
             <div>
-                <h2>Stock Overview</h2>
-                <p>Stock in vs. stock out over the last 30 days</p>
+                <h2>{{ __('Stock Overview') }}</h2>
+                <p>{{ __('Stock in vs. stock out over the last 30 days') }}</p>
             </div>
         </div>
         <div class="card-body">
             <div class="chart-placeholder">
                 <i class="fa-solid fa-chart-column"></i>
-                <span>Chart will render here once connected to data</span>
+                <span>{{ __('Chart will render here once connected to data') }}</span>
             </div>
         </div>
     </div>
@@ -120,7 +120,7 @@
                 <tbody>
                     @forelse ($recentMovements as $m)
                         <tr>
-                            <td class="cell-muted">{{ $m->created_at->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $m->created_at->translatedFormat('d M Y') }}</td>
                             <td class="cell-primary">{{ $m->product->name }}</td>
                             <td class="cell-muted">{{ $m->warehouse->name }}</td>
                             <td>

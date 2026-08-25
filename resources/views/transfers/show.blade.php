@@ -23,7 +23,7 @@
         <div class="card-header">
             <div>
                 <h2>{{ $transfer->reference_number }}</h2>
-                <p>{{ $transfer->transfer_date->format('d M Y') }}</p>
+                <p>{{ $transfer->transfer_date->translatedFormat('d M Y') }}</p>
             </div>
             <span class="badge badge-green">{{ __('Completed') }}</span>
         </div>
@@ -49,7 +49,7 @@
 
                 <div class="detail-field">
                     <div class="label">{{ __('Transfer Date') }}</div>
-                    <div class="value">{{ $transfer->transfer_date->format('d M Y') }}</div>
+                    <div class="value">{{ $transfer->transfer_date->translatedFormat('d M Y') }}</div>
                 </div>
 
                 <div class="detail-field">

@@ -91,7 +91,7 @@
                     @forelse ($adjustments as $adjustment)
                         <tr>
                             <td class="cell-mono cell-primary">{{ $adjustment->reference_number }}</td>
-                            <td class="cell-muted">{{ $adjustment->adjustment_date->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $adjustment->adjustment_date->translatedFormat('d M Y') }}</td>
                             <td class="cell-muted">{{ $adjustment->warehouse->name }}</td>
                             <td><span class="badge badge-gray">{{ __(ucfirst($adjustment->reason)) }}</span></td>
                             <td class="cell-mono">{{ $adjustment->items_count }}</td>

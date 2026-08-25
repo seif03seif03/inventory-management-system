@@ -73,7 +73,7 @@
                 <tbody>
                     @forelse ($movements as $movement)
                         <tr>
-                            <td class="cell-muted">{{ $movement->created_at->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $movement->created_at->translatedFormat('d M Y') }}</td>
                             <td class="cell-primary">{{ $movement->product->name }}</td>
                             <td class="cell-mono">{{ $movement->product->sku }}</td>
                             <td>

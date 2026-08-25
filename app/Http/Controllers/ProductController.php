@@ -87,7 +87,7 @@ class ProductController extends Controller
 
         Product::create($validated);
 
-        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+        return redirect()->route('products.index')->with('success', __('Product created successfully.'));
     }
 
     public function show(Product $product)
@@ -134,7 +134,7 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+        return redirect()->route('products.index')->with('success', __('Product updated successfully.'));
     }
 
     public function destroy(Product $product)
@@ -146,11 +146,11 @@ class ProductController extends Controller
         // violation. Deactivating is the correct way to retire a product whose
         // history must stay readable.
         if ($product->hasStockHistory()) {
-            return back()->with('error', "\"{$product->name}\" appears on stock documents and cannot be deleted. Mark it inactive instead.");
+            return back()->with('error', __('":name" appears on stock documents and cannot be deleted. Mark it inactive instead.', ['name' => $product->name]));
         }
 
         $product->delete();
 
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        return redirect()->route('products.index')->with('success', __('Product deleted successfully.'));
     }
 }

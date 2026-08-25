@@ -47,12 +47,21 @@ class DistributorController extends Controller
 
         Distributor::create($validated);
 
-        return redirect()->route('distributors.index')->with('success', 'Distributor created successfully.');
+        return redirect()->route('distributors.index')->with('success', __('Distributor created successfully.'));
     }
 
     public function show(Distributor $distributor)
     {
-        return view('distributors.show', compact('distributor'));
+        // The page used to be a static mockup showing one hardcoded
+        // distributor's details regardless of which record was opened. These are
+        // the real issues for THIS distributor.
+        $issues = $distributor->stockOuts()
+            ->with('warehouse')
+            ->withSum('items', 'quantity')
+            ->latest('issue_date')
+            ->paginate(10);
+
+        return view('distributors.show', compact('distributor', 'issues'));
     }
 
     public function edit(Distributor $distributor)
@@ -72,7 +81,7 @@ class DistributorController extends Controller
 
         $distributor->update($validated);
 
-        return redirect()->route('distributors.index')->with('success', 'Distributor updated successfully.');
+        return redirect()->route('distributors.index')->with('success', __('Distributor updated successfully.'));
     }
 
     public function destroy(Distributor $distributor)
@@ -81,11 +90,11 @@ class DistributorController extends Controller
         // a distributor named on an issue would orphan that issue and the
         // database refuses it. We ask first and explain.
         if ($distributor->hasStockHistory()) {
-            return back()->with('error', "\"{$distributor->name}\" is named on stock issues and cannot be deleted. Mark it inactive instead.");
+            return back()->with('error', __('":name" is named on stock issues and cannot be deleted. Mark it inactive instead.', ['name' => $distributor->name]));
         }
 
         $distributor->delete();
 
-        return redirect()->route('distributors.index')->with('success', 'Distributor deleted successfully.');
+        return redirect()->route('distributors.index')->with('success', __('Distributor deleted successfully.'));
     }
 }

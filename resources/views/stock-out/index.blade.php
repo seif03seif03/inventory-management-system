@@ -97,7 +97,7 @@
                     @forelse ($stockOuts as $stockOut)
                         <tr>
                             <td class="cell-mono cell-primary">{{ $stockOut->reference_number }}</td>
-                            <td class="cell-muted">{{ $stockOut->issue_date->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $stockOut->issue_date->translatedFormat('d M Y') }}</td>
                             <td class="cell-muted">{{ $stockOut->distributor->name }}</td>
                             <td class="cell-muted">{{ $stockOut->warehouse->name }}</td>
                             <td class="cell-mono">{{ $stockOut->items_count }}</td>

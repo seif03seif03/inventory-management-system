@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'My Profile')
-@section('subtitle', 'Manage your personal account information and security')
+@section('title', __('My Profile'))
+@section('subtitle', __('Manage your personal account information and security'))
 
 @section('content')
 
     <div class="card" style="max-width: 640px;">
         <div class="card-header">
             <div>
-                <h2>Profile Details</h2>
-                <p>Update your personal information</p>
+                <h2>{{ __('Profile Details') }}</h2>
+                <p>{{ __('Update your personal information') }}</p>
             </div>
             <div>
                 @if ($user->role)
@@ -41,7 +41,7 @@
                 <div class="form-grid">
 
                     <div class="form-group full">
-                        <label for="name">Full Name <span style="color:var(--color-danger);">*</span></label>
+                        <label for="name">{{ __('Full Name') }} <span style="color:var(--color-danger);">*</span></label>
                         <input
                             type="text"
                             id="name"
@@ -56,7 +56,7 @@
                     </div>
 
                     <div class="form-group full">
-                        <label for="email">Email Address <span style="color:var(--color-danger);">*</span></label>
+                        <label for="email">{{ __('Email Address') }} <span style="color:var(--color-danger);">*</span></label>
                         <input
                             type="email"
                             id="email"
@@ -109,18 +109,18 @@
                     </div>
 
                     <div class="form-group full" style="border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 4px;">
-                        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 12px; color: var(--color-text);">Change Password</h3>
-                        <p class="hint" style="margin-bottom: 12px;">Leave blank if you do not want to change your password.</p>
+                        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 12px; color: var(--color-text);">{{ __('Change Password') }}</h3>
+                        <p class="hint" style="margin-bottom: 12px;">{{ __('Leave blank if you do not want to change your password.') }}</p>
                     </div>
 
                     <div class="form-group full">
-                        <label for="current_password">Current Password</label>
+                        <label for="current_password">{{ __('Current Password') }}</label>
                         <input
                             type="password"
                             id="current_password"
                             name="current_password"
                             class="form-control"
-                            placeholder="Required if changing password"
+                            placeholder="{{ __('Required if changing password') }}"
                         >
                         @error('current_password')
                             <span class="form-error">{{ $message }}</span>
@@ -128,13 +128,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="password">New Password</label>
+                        <label for="password">{{ __('New Password') }}</label>
                         <input
                             type="password"
                             id="password"
                             name="password"
                             class="form-control"
-                            placeholder="At least 8 characters"
+                            placeholder="{{ __('At least 8 characters') }}"
                         >
                         @error('password')
                             <span class="form-error">{{ $message }}</span>
@@ -142,13 +142,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="password_confirmation">Confirm New Password</label>
+                        <label for="password_confirmation">{{ __('Confirm New Password') }}</label>
                         <input
                             type="password"
                             id="password_confirmation"
                             name="password_confirmation"
                             class="form-control"
-                            placeholder="Repeat new password"
+                            placeholder="{{ __('Repeat new password') }}"
                         >
                     </div>
 
@@ -156,7 +156,7 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> Update Profile
+                        <i class="fa-solid fa-floppy-disk"></i> {{ __('Update Profile') }}
                     </button>
                 </div>
             </form>

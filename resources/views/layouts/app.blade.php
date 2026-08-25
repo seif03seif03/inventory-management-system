@@ -190,7 +190,7 @@
 
                     {{-- Language Switcher Button --}}
                     @if (app()->getLocale() === 'ar')
-                        <a href="{{ route('lang.switch', 'en') }}" class="btn btn-secondary btn-sm" title="Switch to English" style="gap:6px;">
+                        <a href="{{ route('lang.switch', 'en') }}" class="btn btn-secondary btn-sm" title="{{ __('Switch to English') }}" style="gap:6px;">
                             <i class="fa-solid fa-globe"></i> English
                         </a>
                     @else

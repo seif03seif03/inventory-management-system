@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Product Details')
+@section('title', __('Product Details'))
 @section('subtitle', $product->name . ' — ' . $product->sku)
 
 @section('content')
 
     <div class="breadcrumb">
-        <a href="{{ url('/products') }}">Products</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ $product->name }}</span>
+        <a href="{{ url('/products') }}">{{ __('Products') }}</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ $product->name }}</span>
     </div>
 
     @if (session('error'))
@@ -22,39 +22,39 @@
             <div>
                 <h2 style="margin:0;font-size:17px;">{{ $product->name }}</h2>
                 @if ($product->active)
-                    <span class="badge badge-green">Active</span>
+                    <span class="badge badge-green">{{ __('Active') }}</span>
                 @else
-                    <span class="badge badge-gray">Inactive</span>
+                    <span class="badge badge-gray">{{ __('Inactive') }}</span>
                 @endif
                 @if ($currentStock <= $product->minimum_stock && $product->minimum_stock > 0)
-                    <span class="badge badge-red">Low Stock</span>
+                    <span class="badge badge-red">{{ __('Low Stock') }}</span>
                 @endif
             </div>
         </div>
         <div class="row-actions">
-            <a href="{{ route('products.edit', $product) }}" class="btn btn-secondary"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
+            <a href="{{ route('products.edit', $product) }}" class="btn btn-secondary"><i class="fa-regular fa-pen-to-square"></i> {{ __('Edit') }}</a>
             <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Delete this product?')">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger-outline"><i class="fa-regular fa-trash-can"></i> Delete</button>
+                <button type="submit" class="btn btn-danger-outline"><i class="fa-regular fa-trash-can"></i> {{ __('Delete') }}</button>
             </form>
         </div>
     </div>
 
     <div class="card section">
-        <div class="card-header"><h2>Overview</h2></div>
+        <div class="card-header"><h2>{{ __('Overview') }}</h2></div>
         <div class="card-body">
             <div class="detail-grid">
-                <div class="detail-field"><div class="label">SKU</div><div class="value">{{ $product->sku }}</div></div>
-                <div class="detail-field"><div class="label">Barcode</div><div class="value">{{ $product->barcode ?? '—' }}</div></div>
-                <div class="detail-field"><div class="label">Category</div><div class="value">{{ $product->category->name }}</div></div>
-                <div class="detail-field"><div class="label">Price</div><div class="value">${{ number_format($product->price, 2) }}</div></div>
-                <div class="detail-field"><div class="label">Current Stock</div><div class="value">{{ $currentStock }} pcs</div></div>
-                <div class="detail-field"><div class="label">Minimum Stock</div><div class="value">{{ $product->minimum_stock }} pcs</div></div>
+                <div class="detail-field"><div class="label">{{ __('SKU') }}</div><div class="value">{{ $product->sku }}</div></div>
+                <div class="detail-field"><div class="label">{{ __('Barcode') }}</div><div class="value">{{ $product->barcode ?? '—' }}</div></div>
+                <div class="detail-field"><div class="label">{{ __('Category') }}</div><div class="value">{{ $product->category->name }}</div></div>
+                <div class="detail-field"><div class="label">{{ __('Price') }}</div><div class="value">${{ number_format($product->price, 2) }}</div></div>
+                <div class="detail-field"><div class="label">{{ __('Current Stock') }}</div><div class="value">{{ $currentStock }} pcs</div></div>
+                <div class="detail-field"><div class="label">{{ __('Minimum Stock') }}</div><div class="value">{{ $product->minimum_stock }} pcs</div></div>
             </div>
             @if ($product->description)
                 <div class="detail-field" style="margin-top:16px;">
-                    <div class="label">Description</div>
+                    <div class="label">{{ __('Description') }}</div>
                     <div class="value" style="font-weight:400;">{{ $product->description }}</div>
                 </div>
             @endif
@@ -65,8 +65,8 @@
         <div class="card section">
             <div class="card-header">
                 <div>
-                    <h2>QR Code</h2>
-                    <p>Scan to identify this product (encodes ID, SKU, and barcode only)</p>
+                    <h2>{{ __('QR Code') }}</h2>
+                    <p>{{ __('Scan to identify this product (encodes ID, SKU, and barcode only)') }}</p>
                 </div>
             </div>
             <div class="card-body" style="display:flex;align-items:center;gap:20px;">
@@ -83,24 +83,24 @@
     <div class="card">
         <div class="card-header">
             <div>
-                <h2>Stock Movement History</h2>
-                <p>Most recent movements for this product, across all warehouses</p>
+                <h2>{{ __('Stock Movement History') }}</h2>
+                <p>{{ __('Most recent movements for this product, across all warehouses') }}</p>
             </div>
         </div>
         <div class="table-wrap">
             <table class="data-table">
                 <thead>
-                    <tr><th>Date</th><th>Type</th><th>Quantity</th><th>Warehouse</th><th>Reference</th></tr>
+                    <tr><th>{{ __('Date') }}</th><th>{{ __('Type') }}</th><th>{{ __('Quantity') }}</th><th>{{ __('Warehouse') }}</th><th>{{ __('Reference') }}</th></tr>
                 </thead>
                 <tbody>
                     @forelse ($movements as $movement)
                         <tr>
-                            <td class="cell-muted">{{ $movement->created_at->format('d M Y') }}</td>
+                            <td class="cell-muted">{{ $movement->created_at->translatedFormat('d M Y') }}</td>
                             <td>
                                 @if ($movement->type === 'IN')
-                                    <span class="badge badge-green">IN</span>
+                                    <span class="badge badge-green">{{ __('IN') }}</span>
                                 @else
-                                    <span class="badge badge-red">OUT</span>
+                                    <span class="badge badge-red">{{ __('OUT') }}</span>
                                 @endif
                             </td>
                             <td class="cell-mono">{{ $movement->type === 'IN' ? '+' : '-' }}{{ $movement->quantity }}</td>
@@ -119,7 +119,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="text-align:center;padding:40px;color:#888;">No stock movements recorded yet.</td>
+                            <td colspan="5" style="text-align:center;padding:40px;color:#888;">{{ __('No stock movements recorded yet.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

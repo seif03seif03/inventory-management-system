@@ -105,7 +105,7 @@
                             </td>
 
                             <td class="cell-muted">
-                                {{ $category->created_at->format('d M Y') }}
+                                {{ $category->created_at->translatedFormat('d M Y') }}
                             </td>
 
                             <td>

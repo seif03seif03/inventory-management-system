@@ -34,9 +34,9 @@ class AuthController extends Controller
             'email'    => 'required|email',
             'password' => 'required|string',
         ], [
-            'email.required'    => 'Please enter your email address.',
-            'email.email'       => 'Please enter a valid email address.',
-            'password.required' => 'Please enter your password.',
+            'email.required'    => __('Please enter your email address.'),
+            'email.email'       => __('Please enter a valid email address.'),
+            'password.required' => __('Please enter your password.'),
         ]);
 
         $remember = $request->boolean('remember');
@@ -45,7 +45,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'))
-                ->with('success', 'Welcome back!');
+                ->with('success', __('Welcome back!'));
         }
 
         return back()
@@ -66,6 +66,6 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')
-            ->with('info', 'You have been logged out.');
+            ->with('info', __('You have been logged out.'));
     }
 }
