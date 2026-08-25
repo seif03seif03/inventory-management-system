@@ -44,8 +44,18 @@ class StockOutController extends Controller
             });
         }
 
+        // Exact-date filter, kept so any bookmarked ?date=... URL keeps working.
+        // The filter bar now offers a from/to range instead.
         if ($date = $request->input('date')) {
             $query->whereDate('issue_date', $date);
+        }
+
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('issue_date', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('issue_date', '<=', $dateTo);
         }
 
         if ($distributorId = $request->input('distributor_id')) {

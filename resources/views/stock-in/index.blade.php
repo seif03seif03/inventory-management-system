@@ -9,7 +9,7 @@
         <div class="card-header">
             <div>
                 <h2>{{ __('Stock Receipts') }}</h2>
-                <p>{{ $stockIns->count() }} {{ __('receipts recorded') }}</p>
+                <p>{{ $stockIns->total() }} {{ __('receipts recorded') }}</p>
             </div>
             <a href="{{ route('stock-in.create') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> {{ __('New Stock Receipt') }}
@@ -30,8 +30,11 @@
                            placeholder="{{ __('Search by receipt # or product...') }}">
                 </div>
 
-                <input type="date" name="date" value="{{ request('date') }}"
-                       class="select-field" onchange="this.form.submit()">
+                <input type="date" name="date_from" value="{{ request('date_from') }}"
+                       class="select-field" title="{{ __('Date From') }}" onchange="this.form.submit()">
+
+                <input type="date" name="date_to" value="{{ request('date_to') }}"
+                       class="select-field" title="{{ __('Date To') }}" onchange="this.form.submit()">
 
                 <select name="supplier_id" class="select-field" onchange="this.form.submit()">
                     <option value="">{{ __('All Suppliers') }}</option>
@@ -67,7 +70,7 @@
                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
                 </select>
 
-                @if (request()->hasAny(['search', 'date', 'supplier_id', 'warehouse_id', 'product_id', 'status']))
+                @if (request()->hasAny(['search', 'date', 'date_from', 'date_to', 'supplier_id', 'warehouse_id', 'product_id', 'status']))
                     <a href="{{ route('stock-in.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
                 @endif
             </form>
@@ -119,6 +122,32 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($stockIns->hasPages())
+            <div class="pagination-bar">
+                <span>
+                    {{ __('Showing') }} {{ $stockIns->firstItem() }}-{{ $stockIns->lastItem() }}
+                    {{ __('of') }} {{ $stockIns->total() }} {{ __('receipts') }}
+                </span>
+                <div class="pagination-controls">
+                    @if ($stockIns->onFirstPage())
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    @else
+                        <a href="{{ $stockIns->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a>
+                    @endif
+
+                    @foreach ($stockIns->getUrlRange(1, $stockIns->lastPage()) as $page => $url)
+                        <a href="{{ $url }}" class="page-btn {{ $page === $stockIns->currentPage() ? 'active' : '' }}">{{ $page }}</a>
+                    @endforeach
+
+                    @if ($stockIns->hasMorePages())
+                        <a href="{{ $stockIns->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a>
+                    @else
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
 
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StockMovement;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 
@@ -11,14 +12,42 @@ class WarehouseController extends Controller
     {
         $query = Warehouse::latest();
 
+        // Closure-grouped so the OR stays contained and doesn't cancel out the
+        // status filter: AND (name LIKE ... OR location LIKE ...)
         if ($search = $request->input('search')) {
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('location', 'like', "%{$search}%");
+            });
         }
 
-        $warehouses = $query->get();
+        if ($request->filled('active')) {
+            $query->where('active', $request->input('active') == '1');
+        }
 
-        return view('warehouses.index', compact('warehouses'));
+        $warehouses = $query->paginate(20)->withQueryString();
+
+        // The Products and Stock Quantity columns used to be hardcoded "0".
+        //
+        // We reuse currentStockRows() rather than inventing a second stock
+        // calculation — it already applies the one rule (SUM(IN) - SUM(OUT)
+        // per product per warehouse). One query, then a fold in PHP:
+        //   products = distinct products actually held here (stock > 0)
+        //   quantity = total units held here
+        $warehouseStock = [];
+
+        foreach (StockMovement::currentStockRows()->get() as $row) {
+            $stock = (int) $row->current_stock;
+
+            if ($stock <= 0) {
+                continue;
+            }
+
+            $warehouseStock[$row->warehouse_id]['products'] = ($warehouseStock[$row->warehouse_id]['products'] ?? 0) + 1;
+            $warehouseStock[$row->warehouse_id]['quantity'] = ($warehouseStock[$row->warehouse_id]['quantity'] ?? 0) + $stock;
+        }
+
+        return view('warehouses.index', compact('warehouses', 'warehouseStock'));
     }
 
     public function create()
@@ -70,6 +99,14 @@ class WarehouseController extends Controller
 
     public function destroy(Warehouse $warehouse)
     {
+        // Receipts, issues, transfers and the movement ledger all hold a
+        // RESTRICT foreign key on this warehouse, so the database will refuse
+        // this delete once anything has moved through it. We ask first and
+        // explain, rather than surfacing a raw constraint violation.
+        if ($warehouse->hasStockHistory()) {
+            return back()->with('error', "\"{$warehouse->name}\" has stock history and cannot be deleted. Mark it inactive instead.");
+        }
+
         $warehouse->delete();
 
         return redirect()

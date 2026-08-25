@@ -9,6 +9,13 @@
         <a href="{{ url('/products') }}">Products</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ $product->name }}</span>
     </div>
 
+    @if (session('error'))
+        <div class="alert alert-danger" style="margin-top: 12px;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
     <div class="detail-header" style="margin-top: 12px;">
         <div class="cell-with-avatar">
             <div class="avatar-sq" style="width:48px;height:48px;font-size:15px;">{{ strtoupper(substr($product->name, 0, 2)) }}</div>
@@ -124,8 +131,11 @@
 
 @if ($product->barcode)
     @push('scripts')
-    {{-- Lightweight client-side QR rendering — no PHP/Composer package needed. --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    {{-- Lightweight client-side QR rendering — no PHP/Composer package needed.
+         Served from public/js rather than a CDN: this is an internal system
+         that may run on a LAN or offline, and an unreachable CDN would leave
+         the QR panel silently blank. --}}
+    <script src="{{ asset('js/qrcode.min.js') }}"></script>
     <script>
         new QRCode(document.getElementById("productQr"), {
             text: JSON.stringify({

@@ -45,6 +45,21 @@ class WarehouseTransferController extends Controller
             $query->whereDate('transfer_date', $date);
         }
 
+        // Date range — the filter bar offers from/to; the exact-date filter
+        // above is kept so any bookmarked ?date=... URL keeps working.
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('transfer_date', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('transfer_date', '<=', $dateTo);
+        }
+
+        // Filter by status
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
         $transfers  = $query->paginate(20)->withQueryString();
         $warehouses = Warehouse::orderBy('name')->get();
 

@@ -117,6 +117,8 @@
                         <label for="barcodeScanInput"><i class="fa-solid fa-barcode"></i> {{ __('Scan Barcode') }}</label>
                         <input type="text" id="barcodeScanInput" class="form-control"
                                placeholder="{{ __('Scan or type a barcode, then press Enter') }}" autocomplete="off">
+                        <small id="barcodeScanFeedback" role="status" aria-live="polite"
+                               style="display:block;margin-top:6px;font-size:12px;min-height:16px;"></small>
                     </div>
 
                     <div class="table-wrap" style="border-radius:var(--radius-md);overflow:visible;">
@@ -231,6 +233,15 @@
     // and drop it into the first empty product row (adding one if needed).
     // -------------------------------------------------------------------
     const barcodeInput = document.getElementById('barcodeScanInput');
+    const barcodeFeedback = document.getElementById('barcodeScanFeedback');
+
+    // A scan that matches nothing needs to say so in words — a colour change
+    // alone leaves the user guessing whether the scanner even fired.
+    function setBarcodeFeedback(message, isError) {
+        if (!barcodeFeedback) return;
+        barcodeFeedback.textContent = message;
+        barcodeFeedback.style.color = isError ? 'var(--color-danger, #ef4444)' : 'var(--color-success, #16a34a)';
+    }
 
     function findOptionByBarcode(select, code) {
         for (const opt of select.options) {
@@ -254,6 +265,7 @@
             if (!match) {
                 barcodeInput.style.borderColor = 'var(--color-danger, #ef4444)';
                 setTimeout(() => { barcodeInput.style.borderColor = ''; }, 800);
+                setBarcodeFeedback('No active product has the barcode "' + code + '".', true);
                 return;
             }
 
@@ -266,6 +278,7 @@
             }
 
             targetSelect.value = match.value;
+            setBarcodeFeedback('Added ' + match.textContent.trim() + '.', false);
             targetSelect.closest('tr').querySelector('input[name="quantities[]"]')?.focus();
         });
     }

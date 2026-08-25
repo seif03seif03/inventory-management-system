@@ -106,8 +106,18 @@ Route::middleware('auth')->group(function () {
 
     // Warehouse Transfers
     Route::get('/transfers', [WarehouseTransferController::class, 'index'])->name('transfers.index');
-    Route::get('/transfers/create', [WarehouseTransferController::class, 'create'])->name('transfers.create');
-    Route::post('/transfers', [WarehouseTransferController::class, 'store'])->name('transfers.store');
+
+    // Creating a transfer moves real stock between two warehouses, so it is
+    // limited to Admin and Warehouse Manager. Enforced here on the server, not
+    // merely by hiding the button. Viewing stays open to every role.
+    //
+    // These must stay declared BEFORE /transfers/{transfer} below, or the
+    // wildcard would match the literal string "create" and 404 on binding.
+    Route::middleware('role:Admin,Warehouse Manager')->group(function () {
+        Route::get('/transfers/create', [WarehouseTransferController::class, 'create'])->name('transfers.create');
+        Route::post('/transfers', [WarehouseTransferController::class, 'store'])->name('transfers.store');
+    });
+
     Route::get('/transfers/{transfer}', [WarehouseTransferController::class, 'show'])->name('transfers.show');
 
     // Reports

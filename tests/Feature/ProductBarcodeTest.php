@@ -99,4 +99,31 @@ class ProductBarcodeTest extends TestCase
         $response->assertSee('iPhone 15');
         $response->assertDontSee('Other Product');
     }
+
+    public function test_searching_an_unknown_barcode_reports_no_results_instead_of_erroring(): void
+    {
+        Product::create($this->baseProductData());
+
+        $this->actingAs($this->admin)
+            ->get(route('products.index', ['search' => '999999999999']))
+            ->assertOk()
+            ->assertSee('No products found.')
+            ->assertDontSee('iPhone 15');
+    }
+
+    public function test_the_scan_field_exposes_barcodes_on_every_stock_document_form(): void
+    {
+        // The scanner is keyboard input matched against each option's
+        // data-barcode, so the forms must carry that attribute for the lookup
+        // to work at all. No package, no camera, no extra request.
+        Product::create($this->baseProductData());
+
+        foreach (['stock-in.create', 'stock-out.create', 'transfers.create'] as $route) {
+            $this->actingAs($this->admin)
+                ->get(route($route))
+                ->assertOk()
+                ->assertSee('barcodeScanInput')
+                ->assertSee('data-barcode="8901234567890"', false);
+        }
+    }
 }

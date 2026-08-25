@@ -12,13 +12,21 @@ class DistributorController extends Controller
     {
         $query = Distributor::latest();
 
+        // Closure-grouped so the ORs stay contained and don't cancel out the
+        // status filter: AND (name LIKE ... OR email LIKE ... OR phone LIKE ...)
         if ($search = $request->input('search')) {
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%");
+            });
         }
 
-        $distributors = $query->get();
+        if ($request->filled('active')) {
+            $query->where('active', $request->input('active') == '1');
+        }
+
+        $distributors = $query->paginate(20)->withQueryString();
         return view('distributors.index', compact('distributors'));
     }
 
@@ -69,6 +77,13 @@ class DistributorController extends Controller
 
     public function destroy(Distributor $distributor)
     {
+        // stock_outs holds a RESTRICT foreign key on distributor_id, so deleting
+        // a distributor named on an issue would orphan that issue and the
+        // database refuses it. We ask first and explain.
+        if ($distributor->hasStockHistory()) {
+            return back()->with('error', "\"{$distributor->name}\" is named on stock issues and cannot be deleted. Mark it inactive instead.");
+        }
+
         $distributor->delete();
 
         return redirect()->route('distributors.index')->with('success', 'Distributor deleted successfully.');

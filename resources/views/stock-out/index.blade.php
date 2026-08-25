@@ -30,8 +30,11 @@
                            placeholder="{{ __('Search by issue # or product...') }}">
                 </div>
 
-                <input type="date" name="date" value="{{ request('date') }}"
-                       class="select-field" onchange="this.form.submit()">
+                <input type="date" name="date_from" value="{{ request('date_from') }}"
+                       class="select-field" title="{{ __('Date From') }}" onchange="this.form.submit()">
+
+                <input type="date" name="date_to" value="{{ request('date_to') }}"
+                       class="select-field" title="{{ __('Date To') }}" onchange="this.form.submit()">
 
                 <select name="distributor_id" class="select-field" onchange="this.form.submit()">
                     <option value="">{{ __('All Distributors') }}</option>
@@ -70,7 +73,7 @@
                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
                 </select>
 
-                @if (request()->hasAny(['search', 'date', 'distributor_id', 'warehouse_id', 'product_id', 'status']))
+                @if (request()->hasAny(['search', 'date', 'date_from', 'date_to', 'distributor_id', 'warehouse_id', 'product_id', 'status']))
                     <a href="{{ route('stock-out.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
                 @endif
             </form>

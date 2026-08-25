@@ -49,8 +49,18 @@ class StockInController extends Controller
             });
         }
 
+        // Exact-date filter, kept so any bookmarked ?date=... URL keeps working.
+        // The filter bar now offers a from/to range instead.
         if ($date = $request->input('date')) {
             $query->whereDate('receipt_date', $date);
+        }
+
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('receipt_date', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('receipt_date', '<=', $dateTo);
         }
 
         if ($supplierId = $request->input('supplier_id')) {
@@ -71,7 +81,7 @@ class StockInController extends Controller
             $query->where('status', $status);
         }
 
-        $stockIns = $query->get();
+        $stockIns = $query->paginate(20)->withQueryString();
 
         // The supplier/warehouse/product dropdowns in the filter bar are
         // built from the database, never hardcoded.

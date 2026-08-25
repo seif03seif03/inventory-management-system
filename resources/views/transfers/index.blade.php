@@ -11,9 +11,11 @@
                 <h2>{{ __('All Transfers') }}</h2>
                 <p>{{ $transfers->total() }} {{ __('transfers recorded') }}</p>
             </div>
-            <a href="{{ route('transfers.create') }}" class="btn btn-primary">
-                <i class="fa-solid fa-right-left"></i> {{ __('New Transfer') }}
-            </a>
+            @if (auth()->user()->isAdmin() || auth()->user()->isManager())
+                <a href="{{ route('transfers.create') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-right-left"></i> {{ __('New Transfer') }}
+                </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -61,10 +63,22 @@
                     @endforeach
                 </select>
 
-                <input type="date" name="date" value="{{ request('date') }}"
-                       class="select-field" onchange="this.form.submit()">
+                <input type="date" name="date_from" value="{{ request('date_from') }}"
+                       class="select-field" title="{{ __('Date From') }}" onchange="this.form.submit()">
 
-                @if (request()->hasAny(['search', 'from_warehouse_id', 'to_warehouse_id', 'date']))
+                <input type="date" name="date_to" value="{{ request('date_to') }}"
+                       class="select-field" title="{{ __('Date To') }}" onchange="this.form.submit()">
+
+                <select name="status" class="select-field" onchange="this.form.submit()">
+                    <option value="">{{ __('All Statuses') }}</option>
+                    <option value="{{ \App\Models\WarehouseTransfer::STATUS_COMPLETED }}"
+                        {{ request('status') === \App\Models\WarehouseTransfer::STATUS_COMPLETED ? 'selected' : '' }}>
+                        {{ __('Completed') }}
+                    </option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
+                </select>
+
+                @if (request()->hasAny(['search', 'from_warehouse_id', 'to_warehouse_id', 'date', 'date_from', 'date_to', 'status']))
                     <a href="{{ route('transfers.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
                 @endif
             </form>

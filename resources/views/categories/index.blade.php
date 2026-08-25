@@ -10,7 +10,7 @@
         <div class="card-header">
             <div>
                 <h2>{{ __('All Categories') }}</h2>
-                <p>{{ $categories->count() }} {{ __('categories') }}</p>
+                <p>{{ $categories->total() }} {{ __('categories') }}</p>
             </div>
             <a href="{{ route('categories.create') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i>
@@ -24,18 +24,33 @@
             </div>
         @endif
 
-        <div class="card-body" style="padding-bottom: 0;">
-            <div class="filters-bar">
-                <form action="{{ route('categories.index') }}" method="GET" class="search-field" style="margin: 0;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="{{ __('Search categories...') }}"
-                    >
-                </form>
+        @if (session('error'))
+            <div class="card-body" style="padding-bottom: 0;">
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <div>{{ session('error') }}</div>
+                </div>
             </div>
+        @endif
+
+        <div class="card-body" style="padding-bottom: 0;">
+            <form action="{{ route('categories.index') }}" method="GET" class="filters-bar">
+                <div class="search-field">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                           placeholder="{{ __('Search by name or description...') }}">
+                </div>
+
+                <select name="active" class="select-field" onchange="this.form.submit()">
+                    <option value="">{{ __('All Statuses') }}</option>
+                    <option value="1" {{ request('active') === '1' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="0" {{ request('active') === '0' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                </select>
+
+                @if (request()->hasAny(['search', 'active']))
+                    <a href="{{ route('categories.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
+                @endif
+            </form>
         </div>
 
         <div class="table-wrap">
@@ -147,6 +162,32 @@
             </table>
 
         </div>
+
+        @if ($categories->hasPages())
+            <div class="pagination-bar">
+                <span>
+                    {{ __('Showing') }} {{ $categories->firstItem() }}-{{ $categories->lastItem() }}
+                    {{ __('of') }} {{ $categories->total() }} {{ __('categories') }}
+                </span>
+                <div class="pagination-controls">
+                    @if ($categories->onFirstPage())
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    @else
+                        <a href="{{ $categories->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a>
+                    @endif
+
+                    @foreach ($categories->getUrlRange(1, $categories->lastPage()) as $page => $url)
+                        <a href="{{ $url }}" class="page-btn {{ $page === $categories->currentPage() ? 'active' : '' }}">{{ $page }}</a>
+                    @endforeach
+
+                    @if ($categories->hasMorePages())
+                        <a href="{{ $categories->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a>
+                    @else
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                    @endif
+                </div>
+            </div>
+        @endif
 
     </div>
 

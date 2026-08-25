@@ -54,6 +54,57 @@ class WarehouseTransferTest extends TestCase
         $this->actingAs($this->admin)->get(route('transfers.index'))->assertOk();
     }
 
+    /**
+     * Creating a transfer moves real stock, so it is limited to Admin and
+     * Warehouse Manager — enforced on the server, not by hiding the button.
+     */
+    public function test_manager_can_reach_the_transfer_form(): void
+    {
+        $manager = User::factory()->create([
+            'role_id' => Role::create(['name' => 'Warehouse Manager'])->id,
+        ]);
+
+        $this->actingAs($manager)->get(route('transfers.create'))->assertOk();
+    }
+
+    public function test_employee_cannot_reach_the_transfer_form(): void
+    {
+        $employee = User::factory()->create([
+            'role_id' => Role::create(['name' => 'Warehouse Employee'])->id,
+        ]);
+
+        $this->actingAs($employee)->get(route('transfers.create'))->assertStatus(403);
+    }
+
+    public function test_employee_cannot_post_a_transfer_and_no_stock_moves(): void
+    {
+        $employee = User::factory()->create([
+            'role_id' => Role::create(['name' => 'Warehouse Employee'])->id,
+        ]);
+
+        $this->actingAs($employee)->post(route('transfers.store'), [
+            'from_warehouse_id' => $this->whA->id,
+            'to_warehouse_id'   => $this->whB->id,
+            'reference_number'  => 'TRF-BLOCKED',
+            'transfer_date'     => '2026-08-25',
+            'products'          => [$this->product->id],
+            'quantities'        => [10],
+        ])->assertStatus(403);
+
+        $this->assertDatabaseMissing('warehouse_transfers', ['reference_number' => 'TRF-BLOCKED']);
+        $this->assertSame(100, StockMovement::currentStock($this->product->id, $this->whA->id));
+    }
+
+    public function test_employee_can_still_view_the_transfer_list(): void
+    {
+        // Only creating is restricted; viewing history stays open to all roles.
+        $employee = User::factory()->create([
+            'role_id' => Role::create(['name' => 'Warehouse Employee'])->id,
+        ]);
+
+        $this->actingAs($employee)->get(route('transfers.index'))->assertOk();
+    }
+
     public function test_transfer_create_form_loads(): void
     {
         $this->actingAs($this->admin)->get(route('transfers.create'))->assertOk();

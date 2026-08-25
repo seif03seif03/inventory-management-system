@@ -12,13 +12,21 @@ class SupplierController extends Controller
     {
         $query = Supplier::latest();
 
+        // Closure-grouped so the ORs stay contained and don't cancel out the
+        // status filter: AND (name LIKE ... OR email LIKE ... OR phone LIKE ...)
         if ($search = $request->input('search')) {
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%");
+            });
         }
 
-        $suppliers = $query->get();
+        if ($request->filled('active')) {
+            $query->where('active', $request->input('active') == '1');
+        }
+
+        $suppliers = $query->paginate(20)->withQueryString();
         return view('suppliers.index', compact('suppliers'));
     }
 
@@ -69,6 +77,13 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
+        // stock_ins holds a RESTRICT foreign key on supplier_id, so deleting a
+        // supplier named on a receipt would orphan that receipt and the
+        // database refuses it. We ask first and explain.
+        if ($supplier->hasStockHistory()) {
+            return back()->with('error', "\"{$supplier->name}\" is named on stock receipts and cannot be deleted. Mark it inactive instead.");
+        }
+
         $supplier->delete();
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier deleted successfully.');

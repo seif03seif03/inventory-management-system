@@ -9,7 +9,7 @@
         <div class="card-header">
             <div>
                 <h2>{{ __('All Suppliers') }}</h2>
-                <p>{{ $suppliers->count() }} {{ __('suppliers') }}</p>
+                <p>{{ $suppliers->total() }} {{ __('suppliers') }}</p>
             </div>
             <a href="{{ route('suppliers.create') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> {{ __('Add Supplier') }}
@@ -22,13 +22,33 @@
             </div>
         @endif
 
-        <div class="card-body" style="padding-bottom: 0;">
-            <div class="filters-bar">
-                <form action="{{ route('suppliers.index') }}" method="GET" class="search-field" style="margin: 0;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search suppliers...') }}">
-                </form>
+        @if (session('error'))
+            <div class="card-body" style="padding-bottom: 0;">
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <div>{{ session('error') }}</div>
+                </div>
             </div>
+        @endif
+
+        <div class="card-body" style="padding-bottom: 0;">
+            <form action="{{ route('suppliers.index') }}" method="GET" class="filters-bar">
+                <div class="search-field">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                           placeholder="{{ __('Search by name, email, or phone...') }}">
+                </div>
+
+                <select name="active" class="select-field" onchange="this.form.submit()">
+                    <option value="">{{ __('All Statuses') }}</option>
+                    <option value="1" {{ request('active') === '1' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="0" {{ request('active') === '0' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                </select>
+
+                @if (request()->hasAny(['search', 'active']))
+                    <a href="{{ route('suppliers.index') }}" class="btn btn-secondary btn-sm">{{ __('Clear') }}</a>
+                @endif
+            </form>
         </div>
 
         <div class="table-wrap">
@@ -82,6 +102,32 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($suppliers->hasPages())
+            <div class="pagination-bar">
+                <span>
+                    {{ __('Showing') }} {{ $suppliers->firstItem() }}-{{ $suppliers->lastItem() }}
+                    {{ __('of') }} {{ $suppliers->total() }} {{ __('suppliers') }}
+                </span>
+                <div class="pagination-controls">
+                    @if ($suppliers->onFirstPage())
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    @else
+                        <a href="{{ $suppliers->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a>
+                    @endif
+
+                    @foreach ($suppliers->getUrlRange(1, $suppliers->lastPage()) as $page => $url)
+                        <a href="{{ $url }}" class="page-btn {{ $page === $suppliers->currentPage() ? 'active' : '' }}">{{ $page }}</a>
+                    @endforeach
+
+                    @if ($suppliers->hasMorePages())
+                        <a href="{{ $suppliers->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a>
+                    @else
+                        <button class="page-btn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
 
 @endsection
