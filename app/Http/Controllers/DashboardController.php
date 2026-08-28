@@ -47,6 +47,52 @@ class DashboardController extends Controller
             ->whereDate('created_at', today())
             ->sum('quantity');
 
+        $chartStart = today()->subDays(29);
+        $chartEnd = today();
+
+        $movementTotals = StockMovement::query()
+            ->selectRaw('DATE(created_at) as movement_date, type, reference_id, SUM(quantity) as total_quantity')
+            ->whereDate('created_at', '>=', $chartStart)
+            ->whereDate('created_at', '<=', $chartEnd)
+            ->whereIn('type', [StockMovement::TYPE_IN, StockMovement::TYPE_OUT])
+            ->whereIn('reference_type', [StockMovement::REFERENCE_STOCK_IN, StockMovement::REFERENCE_STOCK_OUT])
+            ->whereNotNull('reference_id')
+            ->groupBy('movement_date', 'type', 'reference_id')
+            ->get();
+
+        $movementTotalsByDateAndType = $movementTotals->groupBy(fn ($row) => $row->movement_date . ':' . $row->type);
+
+        $chartLabels = [];
+        $stockInSeries = [];
+        $stockOutSeries = [];
+        $stockInTransactions = [];
+        $stockOutTransactions = [];
+
+        for ($date = $chartStart->copy(); $date->lte($chartEnd); $date->addDay()) {
+            $dateKey = $date->toDateString();
+            $stockInRows = $movementTotalsByDateAndType->get($dateKey . ':' . StockMovement::TYPE_IN, collect());
+            $stockOutRows = $movementTotalsByDateAndType->get($dateKey . ':' . StockMovement::TYPE_OUT, collect());
+
+            $chartLabels[] = $date->format('M j');
+            $stockInSeries[] = (int) $stockInRows->sum('total_quantity');
+            $stockOutSeries[] = (int) $stockOutRows->sum('total_quantity');
+            $stockInTransactions[] = $this->chartTransactions($stockInRows, StockMovement::TYPE_IN);
+            $stockOutTransactions[] = $this->chartTransactions($stockOutRows, StockMovement::TYPE_OUT);
+        }
+
+        $stockInLast30 = array_sum($stockInSeries);
+        $stockOutLast30 = array_sum($stockOutSeries);
+
+        $stockOverviewChart = [
+            'labels' => $chartLabels,
+            'stockIn' => $stockInSeries,
+            'stockOut' => $stockOutSeries,
+            'transactions' => [
+                StockMovement::TYPE_IN => $stockInTransactions,
+                StockMovement::TYPE_OUT => $stockOutTransactions,
+            ],
+        ];
+
         // Low stock is checked per Product + Warehouse. This reuses the same
         // IN-minus-OUT summary query from the StockMovement model.
         //
@@ -88,9 +134,30 @@ class DashboardController extends Controller
             'totalStock',
             'stockInToday',
             'stockOutToday',
+            'stockInLast30',
+            'stockOutLast30',
+            'stockOverviewChart',
             'lowStockCount',
             'lowStockProducts',
             'recentMovements'
         ));
+    }
+
+    private function chartTransactions($rows, string $type): array
+    {
+        return $rows
+            ->sortBy('reference_id')
+            ->map(function ($row) use ($type) {
+                $routeName = $type === StockMovement::TYPE_IN ? 'stock-in.show' : 'stock-out.show';
+                $label = $type === StockMovement::TYPE_IN ? 'Stock In' : 'Stock Out';
+
+                return [
+                    'label' => $label . ' #' . $row->reference_id,
+                    'quantity' => (int) $row->total_quantity,
+                    'url' => route($routeName, $row->reference_id),
+                ];
+            })
+            ->values()
+            ->all();
     }
 }

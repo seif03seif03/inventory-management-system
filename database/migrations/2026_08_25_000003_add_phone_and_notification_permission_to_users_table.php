@@ -24,20 +24,31 @@ return new class extends Migration
      *   forbid keeping a stored number after the permission is revoked.
      */
     public function up(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
+{
+    Schema::table('users', function (Blueprint $table) {
+        if (!Schema::hasColumn('users', 'phone')) {
             $table->string('phone', 20)->nullable()->after('email');
-            $table->boolean('receive_notifications')->default(false)->after('phone');
-        });
-    }
+        }
+
+        if (!Schema::hasColumn('users', 'receive_notifications')) {
+            $table->boolean('receive_notifications')->default(false);
+        }
+    });
+}
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['phone', 'receive_notifications']);
-        });
-    }
+   public function down(): void
+{
+    Schema::table('users', function (Blueprint $table) {
+        if (Schema::hasColumn('users', 'receive_notifications')) {
+            $table->dropColumn('receive_notifications');
+        }
+
+        if (Schema::hasColumn('users', 'phone')) {
+            $table->dropColumn('phone');
+        }
+    });
+}
 };

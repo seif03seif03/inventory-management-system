@@ -76,6 +76,9 @@ class InventoryAdjustment extends Model
      */
     public function netQuantity(): int
     {
-        return $this->items->sum(fn ($item) => $item->signedQuantity());
+        return $this->items->reduce(
+            fn (int $total, $item): int => $total + $item->signedQuantity(),
+            0,
+        );
     }
 }

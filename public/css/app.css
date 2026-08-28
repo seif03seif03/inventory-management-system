@@ -785,6 +785,104 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .chart-placeholder i { font-size: 28px; }
 .chart-placeholder span { font-size: 12.5px; font-weight: 500; }
 
+.stock-chart-wrap {
+  position: relative;
+  min-height: 300px;
+}
+
+.stock-chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: 10px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stock-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-in { background: var(--color-success); }
+.legend-out { background: var(--color-danger); }
+
+.stock-chart {
+  width: 100%;
+  height: 260px;
+  display: block;
+}
+
+.stock-chart-tooltip {
+  position: absolute;
+  width: 240px;
+  z-index: 5;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.stock-chart-tooltip[hidden] {
+  display: none;
+}
+
+.stock-chart-tooltip-head,
+.stock-chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stock-chart-tooltip-head {
+  padding-bottom: 7px;
+  margin-bottom: 7px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stock-chart-tooltip-row {
+  padding: 3px 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.stock-chart-tooltip-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-chart-tooltip-row strong,
+.stock-chart-tooltip-head strong {
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+
+.stock-chart-tooltip-hint,
+.stock-chart-tooltip-empty {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
 /* Section spacing */
 
 .section { margin-bottom: 20px; }

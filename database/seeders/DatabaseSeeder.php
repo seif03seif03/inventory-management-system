@@ -17,6 +17,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            CategorySeeder::class,
+            WarehouseSeeder::class,
+            SupplierSeeder::class,
+            DistributorSeeder::class,
+            ProductSeeder::class,
+            DemoInventoryResetSeeder::class,
+            StockInSeeder::class,
+            StockOutSeeder::class,
+            WarehouseTransferSeeder::class,
+            InventoryAdjustmentSeeder::class,
         ]);
     }
 }

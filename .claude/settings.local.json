@@ -1,7 +1,43 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(timeout 420 php artisan test)",
+      "Bash(echo \"=== EXIT: $?\")",
+      "Bash(cd g:/XAMPP/htdocs/inventory && rm -f /tmp/fk_test.sqlite && echo \"=== any leftover callers of the removed relations? ===\" && grep -rn \"\\\\->stockIn\\\\b\\\\|\\\\->stockOut\\\\b\\\\|\\\\->warehouseTransfer\\\\b\\\\|with\\('stockIn'\\)\\\\|with\\('stockOut'\\)\" app resources/views tests | grep -v \"stockIn->\" | grep -v \"stockOut->\"; echo \"\\(only StockInItem/StockOutItem->stockIn\\(\\) belongsTo remain, which are unrelated\\)\"; echo; echo \"=== git status ===\" && git status --short)",
+      "Bash(curl -sS --max-time 25 -o /tmp/qrcode.min.js -w \"HTTP:%{http_code} BYTES:%{size_download}\\\\n\" https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js)",
+      "Bash(timeout 200 php artisan test --filter=WarehouseTransferTest)",
+      "Bash(timeout 240 php artisan test --filter=SearchFilterTest)",
+      "Bash(timeout 240 php artisan test --filter=\"SearchFilterTest\")",
+      "Bash(git add *)",
+      "Bash(git status *)",
+      "Bash(timeout 400 composer require barryvdh/laravel-dompdf maatwebsite/excel --no-interaction)",
+      "Bash(php -m)",
+      "Bash(grep -i \"^gd$\")",
+      "Read(//g/XAMPP/php/**)",
+      "Bash(php -r \"echo PHP_VERSION, PHP_EOL;\")",
+      "Bash(timeout 400 composer require barryvdh/laravel-dompdf --no-interaction)",
+      "Bash(timeout 300 php artisan test --filter=ReportExportTest)",
+      "Bash(python -)",
+      "Bash(timeout 300 php artisan test --filter=\"ActivityLogTest|NotificationPermissionTest\")",
+      "Bash(grep -vE \"^\\\\s*$\")",
+      "Bash(timeout 300 php artisan test --filter=\"NotificationPermissionTest\")",
+      "Bash(timeout 300 php artisan test --filter=\"test_the_activity_log_is_read_only|test_deleting_a_user_keeps_their_log_entries|test_a_user_without_the_permission_gets_no_bell\")",
+      "Bash(git reset *)",
+      "Bash(git push *)",
+      "Bash(timeout 300 php artisan test --filter=InventoryAdjustmentTest)",
+      "Bash(git checkout *)",
+      "Bash(python storage/app/scan_keys.py)",
+      "Bash(python -c ' *)",
+      "Bash(python storage/app/merge_ar.py)",
+      "Bash(timeout 300 php artisan test --filter=ArabicLocalizationTest)",
+      "Bash(timeout 300 php artisan test --filter=test_english_ui_labels_do_not_appear)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
+      "Bash(sed 's/^\\\\\\(.\\\\{130\\\\}\\\\\\).*/\\\\1.../')",
+      "Bash(grep -rnEi \"\\(api[_-]?key|secret|token|passwd|password\\)\\\\s*=\\\\s*['\\\\\"][A-Za-z0-9/+_-]{12,}\" app/ config/ routes/ resources/ database/)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

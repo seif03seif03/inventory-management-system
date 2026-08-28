@@ -10,47 +10,63 @@ use Illuminate\Support\Facades\Hash;
 class UserSeeder extends Seeder
 {
     /**
-     * Seed default development user accounts.
-     *
-     * Credentials for local development:
-     * - Admin:    admin@example.com    / password123
-     * - Manager:  manager@example.com  / password123
-     * - Employee: employee@example.com / password123
+     * Seed realistic demo user accounts.
+     * Password for every seeded user: password
      */
     public function run(): void
     {
-        $adminRole    = Role::where('name', 'Admin')->first();
-        $managerRole  = Role::where('name', 'Warehouse Manager')->first();
-        $employeeRole = Role::where('name', 'Warehouse Employee')->first();
+        $roles = Role::pluck('id', 'name');
 
-        // 1. Admin account
-        User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+        $users = [
             [
-                'name'     => 'Administrator',
-                'password' => Hash::make('password123'),
-                'role_id'  => $adminRole?->id,
-            ]
-        );
+                'name' => 'Admin User',
+                'email' => 'admin@inventory.test',
+                'phone' => '+201001110001',
+                'role' => 'Admin',
+                'receive_notifications' => true,
+            ],
+            [
+                'name' => 'Warehouse Manager',
+                'email' => 'manager@inventory.test',
+                'phone' => '+201001110002',
+                'role' => 'Warehouse Manager',
+                'receive_notifications' => true,
+            ],
+            [
+                'name' => 'Warehouse Employee',
+                'email' => 'warehouse@inventory.test',
+                'phone' => '+201001110003',
+                'role' => 'Warehouse Employee',
+                'receive_notifications' => false,
+            ],
+            [
+                'name' => 'Inventory Employee',
+                'email' => 'inventory@inventory.test',
+                'phone' => '+201001110004',
+                'role' => 'Inventory Employee',
+                'receive_notifications' => true,
+            ],
+            [
+                'name' => 'Inventory Viewer',
+                'email' => 'viewer@inventory.test',
+                'phone' => null,
+                'role' => 'Viewer',
+                'receive_notifications' => false,
+            ],
+        ];
 
-        // 2. Warehouse Manager account
-        User::firstOrCreate(
-            ['email' => 'manager@example.com'],
-            [
-                'name'     => 'Warehouse Manager',
-                'password' => Hash::make('password123'),
-                'role_id'  => $managerRole?->id,
-            ]
-        );
-
-        // 3. Warehouse Employee account
-        User::firstOrCreate(
-            ['email' => 'employee@example.com'],
-            [
-                'name'     => 'Warehouse Employee',
-                'password' => Hash::make('password123'),
-                'role_id'  => $employeeRole?->id,
-            ]
-        );
+        foreach ($users as $user) {
+            User::updateOrCreate(
+                ['email' => $user['email']],
+                [
+                    'name' => $user['name'],
+                    'phone' => $user['phone'],
+                    'password' => Hash::make('password'),
+                    'role_id' => $roles[$user['role']] ?? null,
+                    'receive_notifications' => $user['receive_notifications'],
+                    'email_verified_at' => now(),
+                ]
+            );
+        }
     }
 }
