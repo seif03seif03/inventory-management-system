@@ -10,6 +10,8 @@ use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\Product;
+use App\Support\InventoryStockLock;
+use Illuminate\Validation\Rule;
 
 class StockInController extends Controller
 {
@@ -125,14 +127,14 @@ class StockInController extends Controller
         //    the errors AND the old input — nothing is written to the DB.
         // ---------------------------------------------------------------
         $validated = $request->validate([
-            'supplier_id'      => 'required|exists:suppliers,id',
-            'warehouse_id'     => 'required|exists:warehouses,id',
+            'supplier_id'      => ['required', Rule::exists('suppliers', 'id')->where('active', true)],
+            'warehouse_id'     => ['required', Rule::exists('warehouses', 'id')->where('active', true)],
             'reference_number' => 'required|string|max:100',
             'receipt_date'     => 'required|date',
             'notes'            => 'nullable|string',
 
             'products'      => 'required|array|min:1',
-            'products.*'    => 'required|exists:products,id',
+            'products.*'    => ['required', Rule::exists('products', 'id')->where('active', true)],
             'quantities'    => 'required|array|min:1',
             'quantities.*'  => 'required|integer|min:1',
             'unit_costs'    => 'required|array|min:1',
@@ -178,6 +180,7 @@ class StockInController extends Controller
         //    the new $stockIn back out for the redirect.
         // ---------------------------------------------------------------
         $stockIn = DB::transaction(function () use ($validated) {
+            InventoryStockLock::lock($validated['products'], [(int) $validated['warehouse_id']]);
 
             // (a) the parent receipt
             $stockIn = StockIn::create([

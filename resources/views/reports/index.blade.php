@@ -31,39 +31,48 @@
         <div class="card-header">
             <div>
                 <h2>{{ __('Reports') }}</h2>
-                <p>{{ __('Select a report above to view live inventory data') }}</p>
+                <p>{{ __('Inventory status summary across all warehouses') }}</p>
             </div>
             <a href="{{ route('reports.stock') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-boxes-stacked"></i> {{ __('Current Stock') }}
             </a>
         </div>
-        <div class="card-body">
-            <div class="chart-placeholder">
-                <i class="fa-solid fa-table-list"></i>
-                <span>{{ __('Open a report to view filtered tables') }}</span>
-            </div>
-        </div>
+
+        @include('reports.partials.analytics', ['analytics' => $overviewAnalytics, 'chartId' => 'reportsOverviewChart'])
     </div>
 
     <div class="grid-2">
         <div class="card">
-            <div class="card-header"><h2>{{ __('Stock In vs Stock Out') }}</h2></div>
+            <div class="card-header">
+                <h2>{{ __('Stock In vs Stock Out') }}</h2>
+                <a href="{{ route('reports.movements') }}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-right-left"></i> {{ __('Open') }}
+                </a>
+            </div>
             <div class="card-body">
-                <div class="chart-placeholder" style="height:200px;">
-                    <i class="fa-solid fa-right-left"></i>
-                    <span>{{ __('Use the movement report for IN and OUT activity') }}</span>
-                </div>
+                <canvas id="reportsMovementChart" class="report-chart" height="240" role="img" aria-label="{{ __('Stock In vs Stock Out') }}"></canvas>
             </div>
         </div>
         <div class="card">
-            <div class="card-header"><h2>{{ __('Top Categories by Value') }}</h2></div>
+            <div class="card-header">
+                <h2>{{ __('Top Categories by Stock') }}</h2>
+                <a href="{{ route('reports.stock') }}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-boxes-stacked"></i> {{ __('Open') }}
+                </a>
+            </div>
             <div class="card-body">
-                <div class="chart-placeholder" style="height:200px;">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>{{ __('Category analytics can be added in a later phase') }}</span>
-                </div>
+                <canvas id="reportsCategoryChart" class="report-chart" height="240" role="img" aria-label="{{ __('Top Categories by Stock') }}"></canvas>
             </div>
         </div>
     </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.InventoryReportCharts.draw('reportsMovementChart', @json($movementChart));
+            window.InventoryReportCharts.draw('reportsCategoryChart', @json($categoryChart));
+        });
+    </script>
+@endpush

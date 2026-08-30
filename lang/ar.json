@@ -532,5 +532,12 @@
     "registered": "مسجل",
     "suppliers": "مورد",
     "transfers": "تحويلات",
-    "transfers recorded": "تحويل مسجل"
+    "transfers recorded": "تحويل مسجل",
+    "Inventory status summary across all warehouses": "ملخص حالة المخزون عبر جميع المستودعات",
+    "Open": "فتح",
+    "Top Categories by Stock": "أعلى الفئات حسب المخزون",
+    "Analysis": "التحليل",
+    "No analysis available for the current filters.": "لا يتوفر تحليل لعوامل التصفية الحالية.",
+    "No chart data for these filters": "لا توجد بيانات رسم بياني لعوامل التصفية هذه",
+    "Too many login attempts. Please try again in :seconds seconds.": "محاولات تسجيل الدخول كثيرة جداً. يرجى المحاولة مرة أخرى بعد :seconds ثانية."
 }

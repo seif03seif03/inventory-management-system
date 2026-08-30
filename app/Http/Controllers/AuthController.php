@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -40,17 +43,36 @@ class AuthController extends Controller
         ]);
 
         $remember = $request->boolean('remember');
+        $throttleKey = $this->throttleKey($request);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => __('Too many login attempts. Please try again in :seconds seconds.', [
+                    'seconds' => $seconds,
+                ]),
+            ]);
+        }
 
         if (Auth::attempt($credentials, $remember)) {
+            RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'))
                 ->with('success', __('Welcome back!'));
         }
 
+        RateLimiter::hit($throttleKey, 60);
+
         return back()
             ->withErrors(['email' => 'The provided credentials do not match our records.'])
             ->onlyInput('email');
+    }
+
+    private function throttleKey(Request $request): string
+    {
+        return Str::lower((string) $request->input('email')).'|'.$request->ip();
     }
 
     /**

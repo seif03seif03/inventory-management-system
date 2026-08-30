@@ -53,6 +53,8 @@
             </form>
         </div>
 
+        @include('reports.partials.analytics', ['analytics' => $stockInAnalytics, 'chartId' => 'stockInReportChart'])
+
         <div class="table-wrap">
             <table class="data-table">
                 <thead>

@@ -6,9 +6,11 @@ use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Models\WarehouseTransfer;
+use App\Support\InventoryStockLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class WarehouseTransferController extends Controller
 {
@@ -91,13 +93,13 @@ class WarehouseTransferController extends Controller
         // 1. VALIDATE
         // ---------------------------------------------------------------
         $validated = $request->validate([
-            'from_warehouse_id' => 'required|exists:warehouses,id',
-            'to_warehouse_id'   => 'required|exists:warehouses,id|different:from_warehouse_id',
+            'from_warehouse_id' => ['required', Rule::exists('warehouses', 'id')->where('active', true)],
+            'to_warehouse_id'   => ['required', Rule::exists('warehouses', 'id')->where('active', true), 'different:from_warehouse_id'],
             'reference_number'  => 'required|string|max:100',
             'transfer_date'     => 'required|date',
             'notes'             => 'nullable|string',
             'products'          => 'required|array|min:1',
-            'products.*'        => 'required|exists:products,id',
+            'products.*'        => ['required', Rule::exists('products', 'id')->where('active', true)],
             'quantities'        => 'required|array|min:1',
             'quantities.*'      => 'required|integer|min:1',
         ], [
@@ -150,7 +152,28 @@ class WarehouseTransferController extends Controller
         //    the transfer does NOT touch any separate "stock" counter —
         //    it just writes IN/OUT rows, exactly like StockIn/StockOut do.
         // ---------------------------------------------------------------
-        $transfer = DB::transaction(function () use ($validated, $fromWarehouseId) {
+        $transfer = DB::transaction(function () use ($validated, $fromWarehouseId, $requestedQty) {
+            InventoryStockLock::lock(
+                array_keys($requestedQty),
+                [$fromWarehouseId, (int) $validated['to_warehouse_id']]
+            );
+
+            foreach ($requestedQty as $productId => $totalQty) {
+                $available = StockMovement::currentStock($productId, $fromWarehouseId);
+
+                if ($totalQty > $available) {
+                    $product = Product::find($productId);
+
+                    return back()
+                        ->withInput()
+                        ->with('error', __('Insufficient stock for ":name". Available: :available. Requested: :requested.', [
+                            'name'      => $product->name,
+                            'available' => $available,
+                            'requested' => $totalQty,
+                        ]));
+                }
+            }
+
             $transfer = WarehouseTransfer::create([
                 'from_warehouse_id' => $fromWarehouseId,
                 'to_warehouse_id'   => (int) $validated['to_warehouse_id'],
@@ -194,6 +217,10 @@ class WarehouseTransferController extends Controller
 
             return $transfer;
         });
+
+        if ($transfer instanceof \Illuminate\Http\RedirectResponse) {
+            return $transfer;
+        }
 
         return redirect()
             ->route('transfers.show', $transfer)

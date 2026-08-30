@@ -7,6 +7,7 @@ use App\Models\InventoryAdjustmentItem;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
+use App\Support\InventoryStockLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -182,7 +183,33 @@ class InventoryAdjustmentController extends Controller
         // an adjustment whose lines never reached the ledger would silently
         // fail to correct the stock it claims to have corrected.
         // ---------------------------------------------------------------
-        $adjustment = DB::transaction(function () use ($validated, $warehouseId) {
+        $adjustment = DB::transaction(function () use ($validated, $warehouseId, $netByProduct, $productNames) {
+            InventoryStockLock::lock($validated['products'], [$warehouseId]);
+
+            $stockErrors = [];
+
+            foreach ($netByProduct as $productId => $net) {
+                if ($net >= 0) {
+                    continue;
+                }
+
+                $available = StockMovement::currentStock($productId, $warehouseId);
+
+                if (abs($net) > $available) {
+                    $name = $productNames[$productId] ?? "Product #{$productId}";
+
+                    $stockErrors[] = __('Cannot reduce ":name" by :requested — only :available in stock at this warehouse.', [
+                        'name'      => $name,
+                        'requested' => abs($net),
+                        'available' => $available,
+                    ]);
+                }
+            }
+
+            if (! empty($stockErrors)) {
+                return back()->withInput()->with('stockErrors', $stockErrors);
+            }
+
             $adjustment = InventoryAdjustment::create([
                 'warehouse_id'     => $warehouseId,
                 'reference_number' => $validated['reference_number'],
@@ -219,6 +246,10 @@ class InventoryAdjustmentController extends Controller
 
             return $adjustment;
         });
+
+        if ($adjustment instanceof \Illuminate\Http\RedirectResponse) {
+            return $adjustment;
+        }
 
         return redirect()
             ->route('adjustments.show', $adjustment)

@@ -243,8 +243,10 @@
                 menuToggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (window.innerWidth <= 860) {
+                        appShell.classList.remove('sidebar-collapsed');
                         sidebar.classList.toggle('open');
                     } else {
+                        sidebar.classList.remove('open');
                         appShell.classList.toggle('sidebar-collapsed');
                         const isCollapsed = appShell.classList.contains('sidebar-collapsed');
                         localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');

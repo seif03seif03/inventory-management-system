@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -53,6 +54,40 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
+    }
+
+    public function test_login_is_rate_limited_after_repeated_failures(): void
+    {
+        RateLimiter::clear('admin@example.com|127.0.0.1');
+
+        User::factory()->create([
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->from('/login')->post('/login', [
+                'email' => 'admin@example.com',
+                'password' => 'wrong-password',
+            ]);
+        }
+
+        $this->from('/login')->post('/login', [
+            'email' => 'admin@example.com',
+            'password' => 'wrong-password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_responses_include_security_headers(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     }
 
     public function test_user_can_logout(): void

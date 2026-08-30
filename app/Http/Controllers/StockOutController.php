@@ -11,6 +11,7 @@ use App\Models\StockMovement;
 use App\Models\Distributor;
 use App\Models\Warehouse;
 use App\Models\Product;
+use App\Support\InventoryStockLock;
 
 class StockOutController extends Controller
 {
@@ -231,7 +232,30 @@ class StockOutController extends Controller
         //
         // All-or-nothing. That is the whole point of a transaction.
         // ---------------------------------------------------------------
-        $stockOut = DB::transaction(function () use ($validated, $warehouseId) {
+        $stockOut = DB::transaction(function () use ($validated, $warehouseId, $requestedByProduct, $productNames) {
+            InventoryStockLock::lock($validated['products'], [$warehouseId]);
+
+            $stockErrors = [];
+
+            foreach ($requestedByProduct as $productId => $requested) {
+                $available = StockMovement::currentStock($productId, $warehouseId);
+
+                if ($requested > $available) {
+                    $name = $productNames[$productId] ?? "Product #{$productId}";
+
+                    $stockErrors[] = __('Insufficient stock for ":name". Available: :available. Requested: :requested.', [
+                        'name'      => $name,
+                        'available' => $available,
+                        'requested' => $requested,
+                    ]);
+                }
+            }
+
+            if (! empty($stockErrors)) {
+                return back()
+                    ->withInput()
+                    ->with('stockErrors', $stockErrors);
+            }
 
             // (a) Create the parent issue record.
             $stockOut = StockOut::create([
@@ -269,6 +293,10 @@ class StockOutController extends Controller
 
             return $stockOut;
         });
+
+        if ($stockOut instanceof \Illuminate\Http\RedirectResponse) {
+            return $stockOut;
+        }
 
         return redirect()
             ->route('stock-out.show', $stockOut)
