@@ -32,7 +32,7 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(20)->withQueryString();
-        $roles = Role::orderBy('name')->get();
+        $roles = Role::select('id', 'name')->orderBy('name')->get();
 
         return view('users.index', compact('users', 'roles'));
     }
@@ -44,7 +44,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::orderBy('name')->get();
+        $roles = Role::select('id', 'name')->orderBy('name')->get();
 
         return view('users.create', compact('roles'));
     }
@@ -95,7 +95,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $roles = Role::orderBy('name')->get();
+        $roles = Role::select('id', 'name')->orderBy('name')->get();
 
         return view('users.edit', compact('user', 'roles'));
     }

@@ -16,21 +16,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <span class="badge badge-green">{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('products.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -89,7 +74,7 @@
                                 @endif
                             </td>
                             <td class="cell-muted">{{ $product->category->name }}</td>
-                            <td class="cell-primary">${{ number_format($product->price, 2) }}</td>
+                            <td class="cell-primary">@money($product->price)</td>
                             @php $stock = $productStocks[$product->id] ?? 0; @endphp
                             <td class="cell-mono">
                                 {{ $stock }}
@@ -118,9 +103,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px;">{{ __('No products found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="8"
+                            icon="fa-box"
+                            :title="__('No products yet')"
+                            :message="__('Products are the catalogue every receipt, issue and transfer refers to.')"
+                            :create-url="route('products.create')"
+                            :create-label="__('Add Product')"
+                        />
                     @endforelse
                 </tbody>
             </table>

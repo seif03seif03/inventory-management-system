@@ -63,7 +63,7 @@ class WarehouseTransferController extends Controller
         }
 
         $transfers  = $query->paginate(20)->withQueryString();
-        $warehouses = Warehouse::orderBy('name')->get();
+        $warehouses = Warehouse::select('id', 'name')->orderBy('name')->get();
 
         return view('transfers.index', compact('transfers', 'warehouses'));
     }
@@ -75,8 +75,11 @@ class WarehouseTransferController extends Controller
      */
     public function create()
     {
-        $warehouses = Warehouse::where('active', true)->orderBy('name')->get();
-        $products   = Product::where('active', true)->orderBy('name')->get();
+        // Only the columns the <option> tags render. Products need sku and
+        // barcode as well: the label reads "name (sku)" and the barcode feeds
+        // the scanner lookup.
+        $warehouses = Warehouse::select('id', 'name')->where('active', true)->orderBy('name')->get();
+        $products   = Product::select('id', 'name', 'sku', 'barcode')->where('active', true)->orderBy('name')->get();
 
         return view('transfers.create', compact('warehouses', 'products'));
     }

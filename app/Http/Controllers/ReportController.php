@@ -10,6 +10,7 @@ use App\Models\StockMovement;
 use App\Models\StockOutItem;
 use App\Models\Supplier;
 use App\Models\Warehouse;
+use App\Support\Money;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -358,14 +359,14 @@ class ReportController extends Controller
         return [
             'metrics' => [
                 $this->metric('Received Units', number_format($totalQuantity), 'fa-inbox', 'green'),
-                $this->metric('Total Cost', number_format($totalCost, 2), 'fa-money-bill-wave', 'blue'),
+                $this->metric('Total Cost', Money::format($totalCost), 'fa-money-bill-wave', 'blue'),
                 $this->metric('Receipt Lines', number_format($items->count()), 'fa-list-check', 'gray'),
                 $this->metric('Documents', number_format($items->pluck('stock_in_id')->unique()->count()), 'fa-file-lines', 'amber'),
             ],
             'insights' => array_values(array_filter([
                 $topProduct ? $this->insight($topProduct['label'] . ' is the top received product at ' . number_format($topProduct['value']) . ' units.', 'green') : null,
                 $topSupplier ? $this->insight($topSupplier['label'] . ' supplied the most filtered units.', 'blue') : null,
-                $totalCost > 0 ? $this->insight('The filtered receipts total ' . number_format($totalCost, 2) . ' in stock value.', 'gray') : null,
+                $totalCost > 0 ? $this->insight('The filtered receipts total ' . Money::format($totalCost) . ' in stock value.', 'gray') : null,
             ])),
             'chart' => $this->chart('Received Units by Date', $series['labels'], [
                 ['label' => 'Received', 'color' => 'green', 'values' => $series['values']],
@@ -543,8 +544,11 @@ class ReportController extends Controller
             number_format((float) $item->lineTotal(), 2, '.', ''),
         ]);
 
+        // The amounts stay bare numbers so a spreadsheet reads the cells as
+        // numbers; the currency is named in the column heading instead.
         return $this->render($format, 'stock-in-report', 'Stock In Report',
-            ['Reference', 'Date', 'Supplier', 'Warehouse', 'Product', 'SKU', 'Quantity', 'Unit Cost', 'Line Total'],
+            ['Reference', 'Date', 'Supplier', 'Warehouse', 'Product', 'SKU', 'Quantity',
+                'Unit Cost (' . Money::symbol() . ')', 'Line Total (' . Money::symbol() . ')'],
             $rows
         );
     }
@@ -670,11 +674,15 @@ class ReportController extends Controller
     private function filterLists(): array
     {
         return [
-            'products' => Product::where('active', true)->orderBy('name')->get(),
-            'categories' => Category::orderBy('name')->get(),
-            'warehouses' => Warehouse::orderBy('name')->get(),
-            'suppliers' => Supplier::orderBy('name')->get(),
-            'distributors' => Distributor::orderBy('name')->get(),
+            // Every report page carries this whole filter bar, so it is the
+            // hottest of the dropdown queries. Each select() lists exactly the
+            // columns the <option> tags render; products need sku as well
+            // because their label reads "name (sku)".
+            'products' => Product::select('id', 'name', 'sku')->where('active', true)->orderBy('name')->get(),
+            'categories' => Category::select('id', 'name')->orderBy('name')->get(),
+            'warehouses' => Warehouse::select('id', 'name')->orderBy('name')->get(),
+            'suppliers' => Supplier::select('id', 'name')->orderBy('name')->get(),
+            'distributors' => Distributor::select('id', 'name')->orderBy('name')->get(),
         ];
     }
 }

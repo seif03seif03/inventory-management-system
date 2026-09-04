@@ -221,6 +221,29 @@
             </header>
 
             <main class="page-content">
+                {{--
+                    Flash messages and the validation summary, rendered once for
+                    every page rather than copied into each one. See the
+                    component for why they live here.
+                --}}
+                <x-flash />
+
+                {{-- Document head shown only when printing (see the @media print
+                     block in app.css). On a sheet there is no topbar or sidebar,
+                     so this is the only place the reader learns what the document
+                     is or who issued it. --}}
+                <div class="print-head">
+                    <div class="print-head-brand">
+                        <strong>{{ __('Inventory Management') }}</strong>
+                        @hasSection('subtitle')
+                            <span>@yield('subtitle')</span>
+                        @endif
+                    </div>
+                    <div class="print-head-meta">
+                        {{ __('Printed') }} {{ now()->translatedFormat('d M Y H:i') }}
+                    </div>
+                </div>
+
                 @yield('content')
             </main>
 
@@ -281,6 +304,70 @@
                         notifToggle.setAttribute('aria-expanded', 'false');
                     }
                 });
+            }
+
+            // -------------------------------------------------------------
+            // Double submit prevention
+            //
+            // A slow POST leaves the button live, and a second click sends the
+            // same document again. For a receipt, an issue or a transfer that
+            // is not a harmless duplicate row — stock moves twice. One listener
+            // on the document covers every form on every page, including any
+            // added to the page later.
+            //
+            // The button is deliberately NOT disabled: a disabled submit button
+            // is left out of the request body, so disabling one would silently
+            // drop the value of any named submit. It is marked spent instead,
+            // and .is-submitting takes its pointer events away.
+            // -------------------------------------------------------------
+            document.addEventListener('submit', (event) => {
+                const form = event.target;
+
+                // A confirm() the user dismissed — or any other handler that
+                // stopped this submit — means nothing was sent, so the form has
+                // to stay usable.
+                if (event.defaultPrevented) {
+                    return;
+                }
+
+                if (form.dataset.submitting === 'true') {
+                    event.preventDefault();
+                    return;
+                }
+
+                form.dataset.submitting = 'true';
+
+                form.querySelectorAll('button[type="submit"], button:not([type])').forEach((button) => {
+                    button.classList.add('is-submitting');
+                    button.setAttribute('aria-busy', 'true');
+                });
+            });
+
+            // Returning to a cached page with the browser's Back button restores
+            // the DOM exactly as it was mid-submit, so the flags have to be
+            // cleared or the form stays dead for good.
+            window.addEventListener('pageshow', () => {
+                document.querySelectorAll('form[data-submitting="true"]').forEach((form) => {
+                    delete form.dataset.submitting;
+                });
+
+                document.querySelectorAll('.is-submitting').forEach((element) => {
+                    element.classList.remove('is-submitting');
+                    element.removeAttribute('aria-busy');
+                });
+            });
+
+            // Put the cursor in the first field the server rejected. Blade has
+            // already rendered the message beside it, so this only has to find
+            // the first one and scroll it into view.
+            const firstErrorMessage = document.querySelector('.form-error');
+
+            if (firstErrorMessage) {
+                const field = firstErrorMessage.closest('.form-group')?.querySelector('.form-control');
+
+                if (field) {
+                    field.focus();
+                }
             }
         });
     </script>

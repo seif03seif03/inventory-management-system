@@ -61,19 +61,37 @@ class ProductController extends Controller
             $productStocks[$product->id] = max(0, (int)$in - (int)$out);
         }
 
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::select('id', 'name')->orderBy('name')->get();
 
         return view('products.index', compact('products', 'productStocks', 'categories'));
     }
 
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::select('id', 'name')->orderBy('name')->get();
         return view('products.create', compact('categories'));
+    }
+
+    /**
+     * Match the SKU to the form the model will actually store.
+     *
+     * Product::booted() upper-cases the SKU on save, so "iph-15" and "IPH-15"
+     * are one and the same key in the table. Validating the raw input would let
+     * the second spelling past a case-sensitive unique rule and then hit the
+     * unique index as a 500. Normalising first means the rule compares the value
+     * that is really going to be written.
+     */
+    private function normalizeSku(Request $request): void
+    {
+        if ($request->has('sku')) {
+            $request->merge(['sku' => strtoupper((string) $request->input('sku'))]);
+        }
     }
 
     public function store(Request $request)
     {
+        $this->normalizeSku($request);
+
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
@@ -115,12 +133,14 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::select('id', 'name')->orderBy('name')->get();
         return view('products.edit', compact('product', 'categories'));
     }
 
     public function update(Request $request, Product $product)
     {
+        $this->normalizeSku($request);
+
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',

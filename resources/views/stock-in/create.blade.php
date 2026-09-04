@@ -9,13 +9,6 @@
         <a href="{{ route('stock-in.index') }}">{{ __('Stock In') }}</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ __('New Receipt') }}</span>
     </div>
 
-    @if (session('error'))
-        <div class="alert alert-danger" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     {{-- ONE form wraps BOTH cards (receipt details + items), so the header
          fields and every item row are submitted together in a single request. --}}
     <form action="{{ route('stock-in.store') }}" method="POST">
@@ -103,7 +96,7 @@
                 <div class="table-wrap line-items-table">
                     <table class="data-table">
                         <thead>
-                            <tr><th style="width:40%">{{ __('Product') }}</th><th>{{ __('Quantity') }}</th><th>{{ __('Unit Cost') }}</th><th>{{ __('Total') }}</th><th></th></tr>
+                            <tr><th style="width:40%">{{ __('Product') }}</th><th>{{ __('Quantity') }}</th><th>{{ __('Unit Cost') }} ({{ App\Support\Money::symbol() }})</th><th>{{ __('Total') }}</th><th></th></tr>
                         </thead>
                         {{-- On a validation failure we rebuild exactly the rows the user
                              submitted, using old(). A fresh form starts with one row. --}}
@@ -137,7 +130,7 @@
                                             <span class="cell-muted">{{ $message }}</span>
                                         @enderror
                                     </td>
-                                    <td class="cell-mono row-total">$0.00</td>
+                                    <td class="cell-mono row-total">@money(0)</td>
                                     <td><button type="button" class="btn btn-danger-outline btn-sm btn-icon remove-row-btn"><i class="fa-regular fa-trash-can"></i></button></td>
                                 </tr>
                             @endforeach
@@ -158,7 +151,7 @@
                         </td>
                         <td><input type="number" name="quantities[]" class="form-control row-qty" min="1" step="1" placeholder="0" required></td>
                         <td><input type="number" name="unit_costs[]" class="form-control row-cost" min="0" step="0.01" placeholder="0.00" required></td>
-                        <td class="cell-mono row-total">$0.00</td>
+                        <td class="cell-mono row-total">@money(0)</td>
                         <td><button type="button" class="btn btn-danger-outline btn-sm btn-icon remove-row-btn"><i class="fa-regular fa-trash-can"></i></button></td>
                     </tr>
                 </template>
@@ -185,7 +178,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const template = document.getElementById('itemRowTemplate');
     const addBtn   = document.getElementById('addRowBtn');
 
-    const money = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // Mirrors App\Support\Money::format(), so a row total on this form and the
+    // one on the saved receipt read identically. 'en-US' is not the UI locale —
+    // it is the separator pair PHP's number_format() produces (1,234.56), which
+    // is what has to be matched.
+    const CURRENCY = @json(App\Support\Money::symbol());
+    const money = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + CURRENCY;
 
     function recalcRow(row) {
         const qty  = parseFloat(row.querySelector('.row-qty').value)  || 0;

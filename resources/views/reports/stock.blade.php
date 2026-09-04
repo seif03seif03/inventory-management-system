@@ -100,9 +100,12 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">{{ __('No stock rows found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="7"
+                            icon="fa-boxes-stacked"
+                            :title="__('Nothing in stock')"
+                            :message="__('This report counts what receipts, issues, transfers and adjustments have left on the shelves.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

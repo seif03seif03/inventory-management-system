@@ -20,20 +20,6 @@
 
         <div class="card-body">
 
-            @if (session('success'))
-                <div class="alert alert-success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>Please correct the errors below.</div>
-                </div>
-            @endif
-
             <form action="{{ route('profile.update') }}" method="POST">
                 @csrf
                 @method('PUT')

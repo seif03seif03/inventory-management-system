@@ -18,20 +18,6 @@
 
         <div class="card-body" style="padding-bottom: 0;">
 
-            @if (session('success'))
-                <div class="alert alert-success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            @endif
-
             <form action="{{ route('users.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -126,11 +112,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px; color: #888;">
-                                {{ __('No users found matching criteria.') }}
-                            </td>
-                        </tr>
+                        <x-empty-row
+                            colspan="7"
+                            icon="fa-users"
+                            :title="__('No users yet')"
+                            :message="__('Each account carries a role, and the role decides what that person can reach.')"
+                            :create-url="route('users.create')"
+                            :create-label="__('Add User')"
+                        />
                     @endforelse
                 </tbody>
             </table>

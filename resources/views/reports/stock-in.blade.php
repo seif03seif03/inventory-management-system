@@ -65,8 +65,8 @@
                         <th>{{ __('Warehouse') }}</th>
                         <th>{{ __('Product') }}</th>
                         <th>{{ __('Quantity') }}</th>
-                        <th>{{ __('Unit Cost') }}</th>
-                        <th>{{ __('Total Cost') }}</th>
+                        <th>{{ __('Unit Cost') }} ({{ App\Support\Money::symbol() }})</th>
+                        <th>{{ __('Total Cost') }} ({{ App\Support\Money::symbol() }})</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,13 +78,16 @@
                             <td class="cell-muted">{{ $item->stockIn->warehouse->name }}</td>
                             <td class="cell-primary">{{ $item->product->name }}</td>
                             <td class="cell-mono">+{{ $item->quantity }}</td>
-                            <td class="cell-mono">{{ number_format($item->unit_cost, 2) }}</td>
-                            <td class="cell-mono">{{ number_format($item->lineTotal(), 2) }}</td>
+                            <td class="cell-mono">@amount($item->unit_cost)</td>
+                            <td class="cell-mono">@amount($item->lineTotal())</td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px;">{{ __('No completed stock-in lines found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="8"
+                            icon="fa-inbox"
+                            :title="__('No goods received')"
+                            :message="__('This report lists the lines of every completed stock receipt.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

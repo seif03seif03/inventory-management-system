@@ -99,6 +99,7 @@ img { max-width: 100%; }
   gap: 10px;
   padding: 20px 22px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 
 .sidebar-brand-mark {
@@ -136,12 +137,21 @@ img { max-width: 100%; }
 
 .sidebar-nav {
   flex: 1;
+  /* Scrolls only as a fallback on very short windows; the scrollbar itself is
+     hidden so the nav never jumps around under a visible track. */
   overflow-y: auto;
-  padding: 14px 12px 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 14px 12px 12px;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .sidebar-group {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .sidebar-group-label {
@@ -150,19 +160,19 @@ img { max-width: 100%; }
   letter-spacing: 0.8px;
   text-transform: uppercase;
   color: #626D7E;
-  padding: 16px 10px 6px;
+  padding: 12px 10px 5px;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 9px 10px;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
   font-size: 13.5px;
   font-weight: 500;
   color: var(--color-sidebar-text);
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   border-left: 3px solid transparent;
   transition: background 0.12s ease, color 0.12s ease;
 }
@@ -191,6 +201,7 @@ img { max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .sidebar-avatar {
@@ -1183,3 +1194,237 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .notif-empty { color: var(--color-text-muted, #5F6368); }
 .notif-foot { display: block; text-decoration: none; font-weight: 600; color: var(--color-accent, #1A73E8); }
 .notif-foot:hover { background: var(--color-bg-soft, #F8F9FA); }
+
+/* ---------------------------------------------------------------------------
+   UI polish
+   Appended rather than folded into the rules above so the diff stays readable.
+   Every selector here is either a new class or a refinement of an existing one.
+--------------------------------------------------------------------------- */
+
+/* The list inside a multi-line alert (validation summary, stock refusals).
+   Previously written as an inline style on each occurrence. */
+.alert-list {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+}
+
+.alert-list li { margin-top: 2px; }
+
+/* An alert sitting directly above the page content needs to clear the header
+   without collapsing into it. */
+.page-content > .alert:first-child { margin-top: 4px; }
+
+/* Tables on narrow screens.
+   .table-wrap already scrolls (overflow-x: auto), but a table with no minimum
+   width never becomes wider than its container, so instead of scrolling it
+   squeezes eight columns into a phone and wraps every cell to three lines. The
+   min-width lets the table keep a readable layout and hands the overflow to
+   the wrapper, which is what the wrapper was for. */
+@media (max-width: 860px) {
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+  .table-wrap .data-table { min-width: 760px; }
+}
+
+/* A field the server rejected.
+   :has() lets the error message that Blade already renders drive the styling of
+   the input beside it, so no form markup has to change. */
+.form-group:has(.form-error) .form-control,
+.form-group:has(.form-error) select.form-control,
+.form-group:has(.form-error) textarea.form-control {
+  border-color: var(--color-danger);
+  background: #FFFCFC;
+}
+
+.form-group:has(.form-error) .form-control:focus {
+  box-shadow: 0 0 0 3px var(--color-danger-soft);
+}
+
+/* A form that has already been submitted.
+   The button stays enabled — disabling it would drop a named submit button out
+   of the POST body — so it is only made to look and behave as spent. */
+.is-submitting {
+  opacity: 0.65;
+  cursor: progress;
+  pointer-events: none;
+}
+
+.is-submitting .fa-spinner {
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------------------------------------------------------------------------
+   Print-only document head.
+   Rendered by layouts/app.blade.php and hidden on screen. On paper the topbar
+   and sidebar are gone, so without this the sheet carries no indication of
+   what the document is or which system issued it.
+--------------------------------------------------------------------------- */
+.print-head { display: none; }
+
+/* =========================================================
+   Print
+   The app shell is screen furniture: on paper it wastes the sheet and buries
+   the document. Everything here strips it and lays the page out as a
+   standalone printed document.
+
+   On the table that used to print clipped: the responsive rules are
+   width-based and a portrait page box is only ~700px wide, so
+   `@media (max-width: 860px)` matches while printing. That handed
+   .data-table a 760px min-width inside a .table-wrap that clips
+   (overflow-x: auto), so the right-hand columns fell off the sheet behind a
+   scrollbar. Both are undone below.
+   ========================================================= */
+
+@media print {
+
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  html, body {
+    background: #fff;
+    color: #000;
+    font-size: 10.5pt;
+  }
+
+  /* Screen furniture, and controls that do nothing on paper. */
+  .sidebar,
+  .topbar,
+  .menu-toggle,
+  .breadcrumb,
+  .row-actions,
+  .filters-bar,
+  .pagination-bar,
+  .notif-wrap,
+  .notif-panel,
+  .alert,
+  .btn,
+  .no-print {
+    display: none !important;
+  }
+
+  /* On screen the shell is a fixed sidebar plus an offset column. On paper
+     there is only the document. The margin reset covers LTR and RTL. */
+  .app-shell { display: block; }
+
+  .main-col {
+    display: block;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .page-content { padding: 0; }
+
+  .print-head {
+    display: flex !important;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    border-bottom: 1.5pt solid #000;
+  }
+
+  .print-head-brand strong {
+    display: block;
+    font-size: 13pt;
+    font-weight: 700;
+  }
+
+  .print-head-brand span,
+  .print-head-meta {
+    font-size: 9pt;
+    color: #444;
+  }
+
+  .detail-header {
+    margin-bottom: 12px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Cards become plain framed sections. The shadow prints as a grey smear and
+     the surface fill is dropped by the browser anyway. Breaks are deliberately
+     left alone: a receipt with a hundred line items has to be free to
+     paginate. */
+  .card {
+    background: #fff;
+    border: 0.5pt solid #999;
+    border-radius: 3px;
+    box-shadow: none;
+    margin-bottom: 12px;
+  }
+
+  .card-header {
+    padding: 9px 12px;
+    border-bottom: 0.5pt solid #999;
+    /* Keep a section heading with the rows it introduces. */
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .card-body { padding: 12px; }
+  .section { margin-bottom: 12px; }
+
+  /* Two columns of label/value read better than three on a portrait sheet. */
+  .detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px 20px;
+  }
+
+  .detail-field .label { color: #444; }
+
+  /* Un-clip the items table (see the note above) and let it use the sheet. */
+  .table-wrap { overflow: visible !important; }
+  .table-wrap .data-table { min-width: 0 !important; }
+
+  .data-table {
+    width: 100%;
+    font-size: 9.5pt;
+    border-collapse: collapse;
+  }
+
+  /* A tinted header cell depends on background printing being switched on, so
+     the header is drawn with a rule instead. */
+  .data-table thead th {
+    background: none;
+    color: #000;
+    padding: 6px 8px;
+    border-bottom: 1pt solid #000;
+  }
+
+  .data-table tbody td {
+    color: #000;
+    padding: 6px 8px;
+    border-bottom: 0.5pt solid #ccc;
+  }
+
+  .data-table tbody tr:hover { background: none; }
+
+  /* Repeat the column headings on every sheet, and never split a line item
+     across two of them. */
+  .data-table thead { display: table-header-group; }
+
+  .data-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* The status badge carries meaning, so its colour is worth forcing through.
+     The outline keeps it readable if the print is greyscale. */
+  .badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border: 0.5pt solid currentColor;
+  }
+
+  /* Nothing on paper is clickable, so accent colour and underlines are noise. */
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+}
+

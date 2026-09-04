@@ -16,12 +16,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <span class="badge badge-green">{{ session('success') }}</span>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('stock-out.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -121,9 +115,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px;">{{ __('No stock issues found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="8"
+                            icon="fa-arrow-up-from-bracket"
+                            :title="__('No stock issues yet')"
+                            :message="__('An issue is how goods leave a warehouse for a distributor.')"
+                            :create-url="route('stock-out.create')"
+                            :create-label="__('New Stock Issue')"
+                        />
                     @endforelse
                 </tbody>
             </table>

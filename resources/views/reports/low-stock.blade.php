@@ -77,9 +77,14 @@
                             <td><span class="badge badge-red">{{ __('Low Stock') }}</span></td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">{{ __('No low-stock products found.') }}</td>
-                        </tr>
+                        {{-- An empty low-stock report is good news, not an absence,
+                             so it reads as a result rather than a blank. --}}
+                        <x-empty-row
+                            colspan="7"
+                            icon="fa-circle-check"
+                            :title="__('Nothing needs restocking')"
+                            :message="__('Every product is at or above its minimum in every warehouse.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

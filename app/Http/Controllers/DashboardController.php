@@ -27,33 +27,55 @@ class DashboardController extends Controller
         $totalSuppliers  = Supplier::count();
         $totalDistributors = Distributor::count();
 
+        // ---------------------------------------------------------------
+        // LEDGER TOTALS
+        // ---------------------------------------------------------------
+        //
+        // Four numbers, one pass over stock_movements. The obvious way to write
+        // this is four ->sum('quantity') calls (all IN, all OUT, today's IN,
+        // today's OUT), but each of those is its own scan of the ledger — the
+        // one table that grows without limit in this application. Conditional
+        // SUMs read it once and let the database do the splitting.
+        //
+        // The day filter is written as a half-open range rather than
+        // whereDate(): whereDate() compiles to date(created_at) = ?, and
+        // wrapping the column in a function makes the
+        // movements_type_created_idx index unusable, forcing a full scan of
+        // history to answer a question about today. `>= midnight AND < next
+        // midnight` selects exactly the same rows and can use the index.
+        $dayStart = today();
+        $dayEnd   = today()->addDay();
+
+        $totals = StockMovement::query()
+            ->selectRaw('SUM(CASE WHEN type = ? THEN quantity ELSE 0 END) as total_in', [StockMovement::TYPE_IN])
+            ->selectRaw('SUM(CASE WHEN type = ? THEN quantity ELSE 0 END) as total_out', [StockMovement::TYPE_OUT])
+            ->selectRaw(
+                'SUM(CASE WHEN type = ? AND created_at >= ? AND created_at < ? THEN quantity ELSE 0 END) as in_today',
+                [StockMovement::TYPE_IN, $dayStart, $dayEnd]
+            )
+            ->selectRaw(
+                'SUM(CASE WHEN type = ? AND created_at >= ? AND created_at < ? THEN quantity ELSE 0 END) as out_today',
+                [StockMovement::TYPE_OUT, $dayStart, $dayEnd]
+            )
+            ->first();
+
         // Total stock = SUM(all IN movements) - SUM(all OUT movements)
-        // across every product and every warehouse.
-        $totalIn  = StockMovement::where('type', StockMovement::TYPE_IN)->sum('quantity');
-        $totalOut = StockMovement::where('type', StockMovement::TYPE_OUT)->sum('quantity');
-        $totalStock = (int)$totalIn - (int)$totalOut;
+        // across every product and every warehouse. SUM over an empty table is
+        // NULL, so every figure is cast rather than used directly.
+        $totalStock = (int) $totals->total_in - (int) $totals->total_out;
 
-        // ---------------------------------------------------------------
-        // SECONDARY STATS
-        // ---------------------------------------------------------------
-
-        // Stock In today = sum of IN movements created today.
-        // whereDate() matches any time on today's date.
-        $stockInToday = StockMovement::where('type', StockMovement::TYPE_IN)
-            ->whereDate('created_at', today())
-            ->sum('quantity');
-
-        $stockOutToday = StockMovement::where('type', StockMovement::TYPE_OUT)
-            ->whereDate('created_at', today())
-            ->sum('quantity');
+        $stockInToday  = (int) $totals->in_today;
+        $stockOutToday = (int) $totals->out_today;
 
         $chartStart = today()->subDays(29);
         $chartEnd = today();
 
         $movementTotals = StockMovement::query()
             ->selectRaw('DATE(created_at) as movement_date, type, reference_id, SUM(quantity) as total_quantity')
-            ->whereDate('created_at', '>=', $chartStart)
-            ->whereDate('created_at', '<=', $chartEnd)
+            // Same half-open range, same reason: keep created_at bare so the
+            // index can serve the 30-day window.
+            ->where('created_at', '>=', $chartStart)
+            ->where('created_at', '<', $chartEnd->copy()->addDay())
             ->whereIn('type', [StockMovement::TYPE_IN, StockMovement::TYPE_OUT])
             ->whereIn('reference_type', [StockMovement::REFERENCE_STOCK_IN, StockMovement::REFERENCE_STOCK_OUT])
             ->whereNotNull('reference_id')

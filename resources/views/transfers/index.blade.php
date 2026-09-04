@@ -18,24 +18,6 @@
             @endif
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom:0;">
-                <div class="alert alert-success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="card-body" style="padding-bottom:0;">
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom:0;">
             <form action="{{ route('transfers.index') }}" method="GET" class="filters-bar">
 
@@ -124,11 +106,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" style="text-align:center;padding:40px;color:#888;">
-                                {{ __('No transfers found.') }}
-                            </td>
-                        </tr>
+                        {{-- No create link: the header button is role-gated, and
+                             an empty state must not offer what the page does not. --}}
+                        <x-empty-row
+                            colspan="8"
+                            icon="fa-truck-ramp-box"
+                            :title="__('No transfers yet')"
+                            :message="__('A transfer moves stock between two warehouses without changing the total.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

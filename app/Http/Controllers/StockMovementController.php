@@ -57,9 +57,11 @@ class StockMovementController extends Controller
         // withQueryString() preserves filter parameters in the pagination links,
         // so clicking "Page 2" keeps ?product_id=1 in the URL.
 
-        // Populate the filter dropdowns.
-        $products   = Product::orderBy('name')->get();
-        $warehouses = Warehouse::orderBy('name')->get();
+        // Populate the filter dropdowns, selecting only the columns the <option>
+        // tags render. Products need sku and barcode as well: the label reads
+        // "name (sku)" and the barcode feeds the scanner lookup.
+        $products   = Product::select('id', 'name', 'sku', 'barcode')->orderBy('name')->get();
+        $warehouses = Warehouse::select('id', 'name')->orderBy('name')->get();
 
         return view('stock-movements.index', compact('movements', 'products', 'warehouses'));
     }

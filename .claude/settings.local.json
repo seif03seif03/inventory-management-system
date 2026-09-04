@@ -34,7 +34,20 @@
       "Bash(timeout 300 php artisan test --filter=test_english_ui_labels_do_not_appear)",
       "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
       "Bash(sed 's/^\\\\\\(.\\\\{130\\\\}\\\\\\).*/\\\\1.../')",
-      "Bash(grep -rnEi \"\\(api[_-]?key|secret|token|passwd|password\\)\\\\s*=\\\\s*['\\\\\"][A-Za-z0-9/+_-]{12,}\" app/ config/ routes/ resources/ database/)"
+      "Bash(grep -rnEi \"\\(api[_-]?key|secret|token|passwd|password\\)\\\\s*=\\\\s*['\\\\\"][A-Za-z0-9/+_-]{12,}\" app/ config/ routes/ resources/ database/)",
+      "Bash(echo \"--- exit: $? ---\")",
+      "Bash(grep *)",
+      "Bash(composer audit *)",
+      "Bash(npm audit *)",
+      "PowerShell(php artisan test 2>&1 | Select-Object -Last 25)",
+      "Bash(sed -n '1,40p' database/migrations/*create_products_table.php)",
+      "Bash(sed -n '10,30p' database/migrations/*create_warehouses_table.php)",
+      "PowerShell(php artisan test --filter=LargeDatasetPerformanceTest 2>&1 | Select-Object -Last 60)",
+      "PowerShell(php artisan test 2>&1 | Select-Object -Last 6)",
+      "Bash(vendor/bin/phpunit)",
+      "Bash(vendor/bin/phpunit --filter test_every_translation_key_used_in_the_code_has_an_arabic_entry)",
+      "Bash(php *)",
+      "Bash(vendor/bin/phpunit --filter SharedUiChromeTest)"
     ],
     "additionalDirectories": [
       "\\tmp"

@@ -107,7 +107,7 @@ class ProductBarcodeTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('products.index', ['search' => '999999999999']))
             ->assertOk()
-            ->assertSee('No products found.')
+            ->assertSee('Nothing matches these filters')
             ->assertDontSee('iPhone 15');
     }
 

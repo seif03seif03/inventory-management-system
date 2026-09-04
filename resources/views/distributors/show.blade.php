@@ -11,13 +11,6 @@
         <span>{{ $distributor->name }}</span>
     </div>
 
-    @if (session('error'))
-        <div class="alert alert-danger" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     <div class="detail-header" style="margin-top: 12px;">
         <div class="cell-with-avatar">
             <div class="avatar-sq" style="width:48px;height:48px;font-size:15px;">

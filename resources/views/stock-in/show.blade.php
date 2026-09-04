@@ -9,13 +9,6 @@
         <a href="{{ route('stock-in.index') }}">{{ __('Stock In') }}</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ $stockIn->reference_number }}</span>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <div class="detail-header" style="margin-top: 12px;">
         <div>
             <h2 style="margin:0 0 4px;font-size:17px;">Receipt {{ $stockIn->reference_number }}</h2>
@@ -59,8 +52,8 @@
                             <td class="cell-primary">{{ $item->product->name }}</td>
                             <td class="cell-mono">{{ $item->product->sku }}</td>
                             <td class="cell-mono">+{{ $item->quantity }}</td>
-                            <td class="cell-mono">${{ number_format($item->unit_cost, 2) }}</td>
-                            <td class="cell-mono">${{ number_format($item->lineTotal(), 2) }}</td>
+                            <td class="cell-mono">@money($item->unit_cost)</td>
+                            <td class="cell-mono">@money($item->lineTotal())</td>
                         </tr>
                     @empty
                         <tr>

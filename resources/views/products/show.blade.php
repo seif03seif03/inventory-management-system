@@ -9,13 +9,6 @@
         <a href="{{ url('/products') }}">{{ __('Products') }}</a> <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>{{ $product->name }}</span>
     </div>
 
-    @if (session('error'))
-        <div class="alert alert-danger" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     <div class="detail-header" style="margin-top: 12px;">
         <div class="cell-with-avatar">
             <div class="avatar-sq" style="width:48px;height:48px;font-size:15px;">{{ strtoupper(substr($product->name, 0, 2)) }}</div>
@@ -33,7 +26,7 @@
         </div>
         <div class="row-actions">
             <a href="{{ route('products.edit', $product) }}" class="btn btn-secondary"><i class="fa-regular fa-pen-to-square"></i> {{ __('Edit') }}</a>
-            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Delete this product?')">
+            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('{{ __('Delete this product?') }}')">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger-outline"><i class="fa-regular fa-trash-can"></i> {{ __('Delete') }}</button>
@@ -48,7 +41,7 @@
                 <div class="detail-field"><div class="label">{{ __('SKU') }}</div><div class="value">{{ $product->sku }}</div></div>
                 <div class="detail-field"><div class="label">{{ __('Barcode') }}</div><div class="value">{{ $product->barcode ?? '—' }}</div></div>
                 <div class="detail-field"><div class="label">{{ __('Category') }}</div><div class="value">{{ $product->category->name }}</div></div>
-                <div class="detail-field"><div class="label">{{ __('Price') }}</div><div class="value">${{ number_format($product->price, 2) }}</div></div>
+                <div class="detail-field"><div class="label">{{ __('Price') }}</div><div class="value">@money($product->price)</div></div>
                 <div class="detail-field"><div class="label">{{ __('Current Stock') }}</div><div class="value">{{ $currentStock }} pcs</div></div>
                 <div class="detail-field"><div class="label">{{ __('Minimum Stock') }}</div><div class="value">{{ $product->minimum_stock }} pcs</div></div>
             </div>

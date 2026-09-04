@@ -91,9 +91,12 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">{{ __('No stock movements found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="7"
+                            icon="fa-right-left"
+                            :title="__('No stock movements')"
+                            :message="__('Every receipt, issue, transfer and adjustment writes a line into this ledger.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

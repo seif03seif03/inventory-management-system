@@ -11,13 +11,6 @@
         <span>{{ $stockOut->reference_number }}</span>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <div class="detail-header" style="margin-top: 12px;">
         <div>
             <h2 style="margin:0 0 4px;font-size:17px;">Issue {{ $stockOut->reference_number }}</h2>

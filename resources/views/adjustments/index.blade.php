@@ -18,24 +18,6 @@
             @endif
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom:0;">
-                <div class="alert alert-success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="card-body" style="padding-bottom:0;">
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('adjustments.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -106,9 +88,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">{{ __('No adjustments found.') }}</td>
-                        </tr>
+                        {{-- No create link: the header button is role-gated. --}}
+                        <x-empty-row
+                            colspan="7"
+                            icon="fa-sliders"
+                            :title="__('No adjustments yet')"
+                            :message="__('Adjustments correct stock that no receipt or issue explains — a stock count, damage, a write-off.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

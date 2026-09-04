@@ -79,10 +79,12 @@ class StockOutController extends Controller
 
         $stockOuts = $query->paginate(20)->withQueryString();
 
-        // Populate the filter dropdowns from the database.
-        $distributors = Distributor::orderBy('name')->get();
-        $warehouses = Warehouse::orderBy('name')->get();
-        $products = Product::orderBy('name')->get();
+        // Populate the filter dropdowns from the database, selecting only the
+        // columns the <option> tags render. Products need sku and barcode too:
+        // the label reads "name (sku)" and the barcode feeds the scanner.
+        $distributors = Distributor::select('id', 'name')->orderBy('name')->get();
+        $warehouses = Warehouse::select('id', 'name')->orderBy('name')->get();
+        $products = Product::select('id', 'name', 'sku', 'barcode')->orderBy('name')->get();
 
         return view('stock-out.index', compact('stockOuts', 'distributors', 'warehouses', 'products'));
     }
@@ -109,9 +111,9 @@ class StockOutController extends Controller
      */
     public function create()
     {
-        $distributors = Distributor::where('active', true)->orderBy('name')->get();
-        $warehouses   = Warehouse::where('active', true)->orderBy('name')->get();
-        $products     = Product::where('active', true)->orderBy('name')->get();
+        $distributors = Distributor::select('id', 'name')->where('active', true)->orderBy('name')->get();
+        $warehouses   = Warehouse::select('id', 'name')->where('active', true)->orderBy('name')->get();
+        $products     = Product::select('id', 'name', 'sku', 'barcode')->where('active', true)->orderBy('name')->get();
 
         // Build the stock lookup table from the same summary query used by
         // reports and dashboard low-stock checks.

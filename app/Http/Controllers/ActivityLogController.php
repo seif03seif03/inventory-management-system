@@ -61,7 +61,7 @@ class ActivityLogController extends Controller
             ->orderBy('subject_type')
             ->pluck('subject_type');
 
-        $users = User::orderBy('name')->get();
+        $users = User::select('id', 'name')->orderBy('name')->get();
 
         return view('activity-logs.index', compact('logs', 'users', 'subjectTypes'));
     }

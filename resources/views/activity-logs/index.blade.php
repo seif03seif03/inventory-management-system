@@ -100,9 +100,12 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">{{ __('No activity recorded yet.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="6"
+                            icon="fa-clipboard-list"
+                            :title="__('No activity recorded yet')"
+                            :message="__('Creates, edits and deletions are logged here as people work.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

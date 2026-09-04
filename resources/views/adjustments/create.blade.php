@@ -11,27 +11,6 @@
         <span>{{ __('New Adjustment') }}</span>
     </div>
 
-    @if (session('error'))
-        <div class="alert alert-danger" style="margin-top:12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
-    @if (session('stockErrors'))
-        <div class="alert alert-danger" style="margin-top:12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <div>
-                <strong>{{ __('Could not save — not enough stock to reduce:') }}</strong>
-                <ul style="margin:6px 0 0; padding-inline-start:18px;">
-                    @foreach (session('stockErrors') as $stockError)
-                        <li>{{ $stockError }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    @endif
-
     @if ($warehouses->isEmpty() || $products->isEmpty())
         <div class="alert alert-warning" style="margin-top:12px;">
             <i class="fa-solid fa-triangle-exclamation"></i>

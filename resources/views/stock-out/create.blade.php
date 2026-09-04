@@ -11,30 +11,6 @@
         <span>{{ __('New Issue') }}</span>
     </div>
 
-    {{-- Session error (e.g. mismatched array lengths) --}}
-    @if (session('error'))
-        <div class="alert alert-danger" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
-    {{-- Stock errors: one or more products had insufficient stock.
-         The controller flashes an array of error strings. --}}
-    @if (session('stockErrors'))
-        <div class="alert alert-danger" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <div>
-                <strong>{{ __('Could not save issue — insufficient stock:') }}</strong>
-                <ul style="margin: 6px 0 0 18px;">
-                    @foreach (session('stockErrors') as $stockError)
-                        <li>{{ $stockError }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    @endif
-
     {{--
         ONE form wraps both cards (issue details + items), so all fields
         are submitted together in a single POST request.

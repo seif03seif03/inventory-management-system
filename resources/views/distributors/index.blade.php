@@ -16,21 +16,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <span class="badge badge-green">{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('distributors.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -95,9 +80,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">{{ __('No distributors found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="6"
+                            icon="fa-truck-fast"
+                            :title="__('No distributors yet')"
+                            :message="__('A stock issue records who the goods went to, so add the companies you supply.')"
+                            :create-url="route('distributors.create')"
+                            :create-label="__('Add Distributor')"
+                        />
                     @endforelse
                 </tbody>
             </table>

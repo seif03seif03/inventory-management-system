@@ -16,12 +16,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <span class="badge badge-green">{{ session('success') }}</span>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('stock-in.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -115,9 +109,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px;">{{ __('No stock receipts found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="8"
+                            icon="fa-inbox"
+                            :title="__('No stock receipts yet')"
+                            :message="__('A receipt is how goods enter a warehouse — record one and the stock appears.')"
+                            :create-url="route('stock-in.create')"
+                            :create-label="__('New Stock Receipt')"
+                        />
                     @endforelse
                 </tbody>
             </table>

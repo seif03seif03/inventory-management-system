@@ -76,7 +76,7 @@ class ReportTest extends TestCase
         // Filter by status=out (product has stock 7, so status=out won't show it in table rows)
         $this->get(route('reports.stock', ['status' => 'out']))
             ->assertOk()
-            ->assertSee('No stock rows found.');
+            ->assertSee('Nothing matches these filters');
     }
 
     public function test_stock_in_and_out_reports_filter_by_date_range(): void
@@ -105,7 +105,7 @@ class ReportTest extends TestCase
             'date_from' => $futureDate,
         ]))
             ->assertOk()
-            ->assertSee('No completed stock-in lines found.');
+            ->assertSee('Nothing matches these filters');
     }
 
     private function createInventoryScenario(): array

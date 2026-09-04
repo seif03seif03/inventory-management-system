@@ -18,13 +18,6 @@
 
         <div class="card-body">
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>Please fix the errors below before submitting.</div>
-                </div>
-            @endif
-
             <form action="{{ route('users.store') }}" method="POST">
                 @csrf
 

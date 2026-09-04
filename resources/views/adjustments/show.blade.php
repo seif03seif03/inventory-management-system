@@ -11,13 +11,6 @@
         <span>{{ $adjustment->reference_number }}</span>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success" style="margin-top: 12px;">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <div class="card section" style="margin-top:12px;">
         <div class="card-header"><h2>{{ __('Overview') }}</h2></div>
         <div class="card-body">

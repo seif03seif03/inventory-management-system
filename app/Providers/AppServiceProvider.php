@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseTransfer;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -53,5 +54,11 @@ class AppServiceProvider extends ServiceProvider
             'warehouse'   => Warehouse::class,
             'user'        => User::class,
         ]);
+
+        // @money($amount) renders an amount in the configured currency, and
+        // @amount($amount) renders the number without the symbol. Both go
+        // through App\Support\Money, so no view decides its own format.
+        Blade::directive('money', fn ($expression) => "<?php echo e(\App\Support\Money::format($expression)); ?>");
+        Blade::directive('amount', fn ($expression) => "<?php echo e(\App\Support\Money::amount($expression)); ?>");
     }
 }

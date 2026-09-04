@@ -16,21 +16,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <span class="badge badge-green">{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('warehouses.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -95,9 +80,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">{{ __('No warehouses found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="6"
+                            icon="fa-warehouse"
+                            :title="__('No warehouses yet')"
+                            :message="__('Stock is counted per warehouse, so you need at least one before anything can be received.')"
+                            :create-url="route('warehouses.create')"
+                            :create-label="__('Add Warehouse')"
+                        />
                     @endforelse
                 </tbody>
             </table>

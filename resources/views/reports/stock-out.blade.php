@@ -78,9 +78,12 @@
                             <td class="cell-mono">-{{ $item->quantity }}</td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">{{ __('No completed stock-out lines found.') }}</td>
-                        </tr>
+                        <x-empty-row
+                            colspan="6"
+                            icon="fa-arrow-up-from-bracket"
+                            :title="__('No goods issued')"
+                            :message="__('This report lists the lines of every completed stock issue.')"
+                        />
                     @endforelse
                 </tbody>
             </table>

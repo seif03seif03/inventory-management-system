@@ -18,20 +18,6 @@
 
         <div class="card-body">
 
-            @if (session('error'))
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ __('Please fix the errors below before submitting.') }}</div>
-                </div>
-            @endif
-
             <form action="{{ route('transfers.store') }}" method="POST" id="transferForm">
                 @csrf
 

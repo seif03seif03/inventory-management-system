@@ -87,9 +87,15 @@ class StockInController extends Controller
 
         // The supplier/warehouse/product dropdowns in the filter bar are
         // built from the database, never hardcoded.
-        $suppliers  = Supplier::orderBy('name')->get();
-        $warehouses = Warehouse::orderBy('name')->get();
-        $products   = Product::orderBy('name')->get();
+        //
+        // Each select() lists exactly the columns the <option> tags render, so a
+        // catalogue of thousands of products does not drag its descriptions and
+        // prices across the wire to build a dropdown. Products need sku and
+        // barcode as well: the label reads "name (sku)" and the barcode feeds
+        // the scanner lookup.
+        $suppliers  = Supplier::select('id', 'name')->orderBy('name')->get();
+        $warehouses = Warehouse::select('id', 'name')->orderBy('name')->get();
+        $products   = Product::select('id', 'name', 'sku', 'barcode')->orderBy('name')->get();
 
         return view('stock-in.index', compact('stockIns', 'suppliers', 'warehouses', 'products'));
     }
@@ -103,9 +109,9 @@ class StockInController extends Controller
      */
     public function create()
     {
-        $suppliers  = Supplier::where('active', true)->orderBy('name')->get();
-        $warehouses = Warehouse::where('active', true)->orderBy('name')->get();
-        $products   = Product::where('active', true)->orderBy('name')->get();
+        $suppliers  = Supplier::select('id', 'name')->where('active', true)->orderBy('name')->get();
+        $warehouses = Warehouse::select('id', 'name')->where('active', true)->orderBy('name')->get();
+        $products   = Product::select('id', 'name', 'sku', 'barcode')->where('active', true)->orderBy('name')->get();
 
         return view('stock-in.create', compact('suppliers', 'warehouses', 'products'));
     }

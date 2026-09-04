@@ -18,21 +18,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <span class="badge badge-green">{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="card-body" style="padding-bottom: 0;">
-                <div class="alert alert-danger">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            </div>
-        @endif
-
         <div class="card-body" style="padding-bottom: 0;">
             <form action="{{ route('categories.index') }}" method="GET" class="filters-bar">
                 <div class="search-field">
@@ -149,11 +134,14 @@
 
                     @empty
 
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">
-                                {{ __('No categories found.') }}
-                            </td>
-                        </tr>
+                        <x-empty-row
+                            colspan="6"
+                            icon="fa-tags"
+                            :title="__('No categories yet')"
+                            :message="__('Categories group your products so the catalogue and the reports stay navigable.')"
+                            :create-url="route('categories.create')"
+                            :create-label="__('Add Category')"
+                        />
 
                     @endforelse
 
